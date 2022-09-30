@@ -10,6 +10,7 @@
 
 #include <random>
 #include <string.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 #include <cerrno>
 
@@ -37,10 +38,10 @@ int OperationFlags::ibvFlags() {
 
 QueuePair::QueuePair(infinity::core::Context* context) :
 		context(context) {
-
+	printf("S11\n");
 	ibv_qp_init_attr qpInitAttributes;
 	memset(&qpInitAttributes, 0, sizeof(qpInitAttributes));
-
+	printf("S11\n");
 	qpInitAttributes.send_cq = context->getSendCompletionQueue();
 	qpInitAttributes.recv_cq = context->getReceiveCompletionQueue();
 	qpInitAttributes.srq = context->getSharedReceiveQueue();
@@ -50,26 +51,29 @@ QueuePair::QueuePair(infinity::core::Context* context) :
 	qpInitAttributes.cap.max_recv_sge = infinity::core::Configuration::MAX_NUMBER_OF_SGE_ELEMENTS;
 	qpInitAttributes.qp_type = IBV_QPT_RC;
 	qpInitAttributes.sq_sig_all = 0;
-
+	printf("S12\n");
 	this->ibvQueuePair = ibv_create_qp(context->getProtectionDomain(), &(qpInitAttributes));
 	INFINITY_ASSERT(this->ibvQueuePair != NULL, "[INFINITY][QUEUES][QUEUEPAIR] Cannot create queue pair.\n");
 
 	ibv_qp_attr qpAttributes;
 	memset(&qpAttributes, 0, sizeof(qpAttributes));
-
+	printf("S13\n");
 	qpAttributes.qp_state = IBV_QPS_INIT;
 	qpAttributes.pkey_index = 0;
 	qpAttributes.port_num = context->getDevicePort();
+	printf("devie port is %d\n", context->getDevicePort());
+
 	qpAttributes.qp_access_flags = IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_ATOMIC;
-
+	printf("S14\n");
+	sleep(5);
 	int32_t returnValue = ibv_modify_qp(this->ibvQueuePair, &(qpAttributes), IBV_QP_STATE | IBV_QP_PORT | IBV_QP_ACCESS_FLAGS | IBV_QP_PKEY_INDEX);
-
+	printf("S21\n");
 	INFINITY_ASSERT(returnValue == 0, "[INFINITY][QUEUES][QUEUEPAIR] Cannot transition to INIT state.\n");
-
+	printf("S22\n");
 	std::random_device randomGenerator;
         std::uniform_int_distribution<int> range(0, 1<<24);
         this->sequenceNumber = range(randomGenerator);
-
+	printf("S15\n");
 	this->userData = NULL;
 	this->userDataSize = 0;
 }

@@ -44,6 +44,9 @@ Context::Context(uint16_t device, uint16_t devicePort) {
 
 	// Open IB device and allocate protection domain
 	this->ibvContext = ibv_open_device(this->ibvDevice);
+	const char* dev_name = ibv_get_device_name(this->ibvDevice);
+    	//dev_guid = ibv_get_device_guid(ibv_devs[i]);
+    	printf("%s :\n", dev_name);
 	INFINITY_ASSERT(this->ibvContext != NULL, "[INFINITY][CORE][CONTEXT] Could not open device %d.\n", device);
 	this->ibvProtectionDomain = ibv_alloc_pd(this->ibvContext);
 	INFINITY_ASSERT(this->ibvProtectionDomain != NULL, "[INFINITY][CORE][CONTEXT] Could not allocate protection domain.\n");
