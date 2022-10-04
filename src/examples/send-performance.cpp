@@ -21,9 +21,9 @@
 #include <infinity/requests/RequestToken.h>
 
 #define PORT_NUMBER 8011
-#define SERVER_IP "192.0.0.1"
-#define BUFFER_COUNT 128
-#define MAX_BUFFER_SIZE 4096
+#define SERVER_IP "192.168.6.1"
+#define BUFFER_COUNT 512
+#define MAX_BUFFER_SIZE 512
 #define OPERATIONS_COUNT 1024
 
 uint64_t timeDiff(struct timeval stop, struct timeval start);
@@ -57,6 +57,7 @@ int main(int argc, char **argv) {
 		printf("Creating buffers to receive a messages\n");
 		infinity::memory::Buffer **receiveBuffers = new infinity::memory::Buffer *[BUFFER_COUNT];
 		for (uint32_t i = 0; i < BUFFER_COUNT; ++i) {
+			printf("Worked at %d", i);
 			receiveBuffers[i] = new infinity::memory::Buffer(context, MAX_BUFFER_SIZE * sizeof(char));
 			context->postReceiveBuffer(receiveBuffers[i]);
 		}
