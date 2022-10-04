@@ -90,13 +90,23 @@ QueuePair::~QueuePair() {
 
 }
 
-void QueuePair::activate(uint16_t remoteDeviceId, uint32_t remoteQueuePairNumber, uint32_t remoteSequenceNumber) {
+union ibv_gid QueuePair::getLocalGid() {
+        union ibv_gid gid;
+        int rc = ibv_query_gid(context->getInfiniBandContext(), 1, 3, &gid);
+        if (rc) {
+                INFINITY_ASSERT(false, "Failed to query");
+        }
+
+	return gid;
+}
+
+void QueuePair::activate(uint16_t remoteDeviceId, uint32_t remoteQueuePairNumber, uint32_t remoteSequenceNumber, union ibv_gid remote_gid) {
 
 	ibv_qp_attr qpAttributes;
 	memset(&(qpAttributes), 0, sizeof(qpAttributes));
 
 	qpAttributes.qp_state = IBV_QPS_RTR;
-	qpAttributes.path_mtu = IBV_MTU_4096;
+	qpAttributes.path_mtu = IBV_MTU_512;
 	qpAttributes.dest_qp_num = remoteQueuePairNumber;
 	qpAttributes.rq_psn = remoteSequenceNumber;
 	qpAttributes.max_dest_rd_atomic = 1;
@@ -107,6 +117,8 @@ void QueuePair::activate(uint16_t remoteDeviceId, uint32_t remoteQueuePairNumber
 	qpAttributes.ah_attr.src_path_bits = 0;
 	qpAttributes.ah_attr.port_num = context->getDevicePort();
 
+	qpAttributes.ah_attr.grh.sgid_index = 3;
+	qpAttributes.ah_attr.grh.dgid = remote_gid;
 	int32_t returnValue = ibv_modify_qp(this->ibvQueuePair, &qpAttributes,
 			IBV_QP_STATE | IBV_QP_AV | IBV_QP_PATH_MTU | IBV_QP_DEST_QPN | IBV_QP_RQ_PSN | IBV_QP_MIN_RNR_TIMER | IBV_QP_MAX_DEST_RD_ATOMIC);
 

@@ -63,7 +63,7 @@ protected:
 	 * Activation methods
 	 */
 
-	void activate(uint16_t remoteDeviceId, uint32_t remoteQueuePairNumber, uint32_t remoteSequenceNumber);
+	void activate(uint16_t remoteDeviceId, uint32_t remoteQueuePairNumber, uint32_t remoteSequenceNumber, union ibv_gid gid);
 	void setRemoteUserData(void *userData, uint32_t userDataSize);
 
 public:
@@ -85,6 +85,7 @@ public:
 	uint16_t getLocalDeviceId();
 	uint32_t getQueuePairNumber();
 	uint32_t getSequenceNumber();
+	union ibv_gid getLocalGid();
 
 public:
 

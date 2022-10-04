@@ -27,6 +27,7 @@ typedef struct {
 	uint32_t sequenceNumber;
 	uint32_t userDataSize;
 	char userData[infinity::core::Configuration::MAX_CONNECTION_USER_DATA_SIZE];
+	union ibv_gid gid;
 
 } serializedQueuePair;
 
@@ -94,6 +95,7 @@ QueuePair * QueuePairFactory::acceptIncomingConnection(void *userData, uint32_t 
 	sendBuffer->queuePairNumber = queuePair->getQueuePairNumber();
 	sendBuffer->sequenceNumber = queuePair->getSequenceNumber();
 	sendBuffer->userDataSize = userDataSizeInBytes;
+	sendBuffer->gid = queuePair->getLocalGid();
 	memcpy(sendBuffer->userData, userData, userDataSizeInBytes);
 	printf("S4\n");
 	returnValue = send(connectionSocket, sendBuffer, sizeof(serializedQueuePair), 0);
@@ -104,7 +106,7 @@ QueuePair * QueuePairFactory::acceptIncomingConnection(void *userData, uint32_t 
 			queuePair->getSequenceNumber(), userDataSizeInBytes, receiveBuffer->localDeviceId, receiveBuffer->queuePairNumber, receiveBuffer->sequenceNumber,
 			receiveBuffer->userDataSize);
 	printf("S5\n");
-	queuePair->activate(receiveBuffer->localDeviceId, receiveBuffer->queuePairNumber, receiveBuffer->sequenceNumber);
+	queuePair->activate(receiveBuffer->localDeviceId, receiveBuffer->queuePairNumber, receiveBuffer->sequenceNumber, receiveBuffer->gid);
 	queuePair->setRemoteUserData(receiveBuffer->userData, receiveBuffer->userDataSize);
 	printf("S6\n");
 	this->context->registerQueuePair(queuePair);
@@ -143,6 +145,7 @@ QueuePair * QueuePairFactory::connectToRemoteHost(const char* hostAddress, uint1
 	sendBuffer->queuePairNumber = queuePair->getQueuePairNumber();
 	sendBuffer->sequenceNumber = queuePair->getSequenceNumber();
 	sendBuffer->userDataSize = userDataSizeInBytes;
+	sendBuffer->gid = queuePair->getLocalGid();
 	memcpy(sendBuffer->userData, userData, userDataSizeInBytes);
 
 	returnValue = send(connectionSocket, sendBuffer, sizeof(serializedQueuePair), 0);
@@ -157,7 +160,7 @@ QueuePair * QueuePairFactory::connectToRemoteHost(const char* hostAddress, uint1
 			queuePair->getSequenceNumber(), userDataSizeInBytes, receiveBuffer->localDeviceId, receiveBuffer->queuePairNumber, receiveBuffer->sequenceNumber,
 			receiveBuffer->userDataSize);
 
-	queuePair->activate(receiveBuffer->localDeviceId, receiveBuffer->queuePairNumber, receiveBuffer->sequenceNumber);
+	queuePair->activate(receiveBuffer->localDeviceId, receiveBuffer->queuePairNumber, receiveBuffer->sequenceNumber, receiveBuffer->gid);
 	queuePair->setRemoteUserData(receiveBuffer->userData, receiveBuffer->userDataSize);
 
 	this->context->registerQueuePair(queuePair);
@@ -173,7 +176,7 @@ QueuePair * QueuePairFactory::connectToRemoteHost(const char* hostAddress, uint1
 QueuePair* QueuePairFactory::createLoopback(void *userData, uint32_t userDataSizeInBytes) {
 
 	QueuePair *queuePair = new QueuePair(this->context);
-	queuePair->activate(queuePair->getLocalDeviceId(), queuePair->getQueuePairNumber(), queuePair->getSequenceNumber());
+	queuePair->activate(queuePair->getLocalDeviceId(), queuePair->getQueuePairNumber(), queuePair->getSequenceNumber(), queuePair->getLocalGid());
 	queuePair->setRemoteUserData(userData, userDataSizeInBytes);
 
 	this->context->registerQueuePair(queuePair);
