@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <cassert>
+#include <chrono>
 
 #include <infinity/core/Context.h>
 #include <infinity/queues/QueuePairFactory.h>
@@ -20,6 +21,9 @@
 
 #define PORT_NUMBER 8011
 #define SERVER_IP "192.168.6.1"
+
+using namespace std;
+using std::chrono::high_resolution_clock;
 
 // Usage: ./progam -s for server and ./program for client component
 int main(int argc, char **argv) {
@@ -82,11 +86,16 @@ int main(int argc, char **argv) {
 		infinity::requests::RequestToken requestToken(context);
 		qp->read(buffer1Sided, remoteBufferToken, &requestToken);
 		requestToken.waitUntilCompleted();
-
-		printf("Writing content to remote buffer\n");
-		qp->write(buffer1Sided, remoteBufferToken, &requestToken);
-		requestToken.waitUntilCompleted();
-
+		
+		auto start = std::chrono::high_resolution_clock::now();
+		for (int i = 0; i < 1000*1000; i++) {
+			// printf("Writing content to remote buffer\n");
+			qp->write(buffer1Sided, remoteBufferToken, &requestToken);
+			requestToken.waitUntilCompleted();
+		}
+		auto elapsed = std::chrono::high_resolution_clock::now() - start;
+		long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
+		printf("Microseconds are %lld", microseconds);
 		printf("Sending message to remote host\n");
 		qp->send(buffer2Sided, &requestToken);
 		requestToken.waitUntilCompleted();
