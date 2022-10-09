@@ -22,9 +22,9 @@
 
 #define PORT_NUMBER 8011
 #define SERVER_IP "192.168.6.1"
-#define BUFFER_COUNT 128
+#define BUFFER_COUNT 1
 #define MAX_BUFFER_SIZE 4096
-#define OPERATIONS_COUNT 1024
+#define OPERATIONS_COUNT 1024*1024
 
 uint64_t timeDiff(struct timeval stop, struct timeval start);
 
@@ -73,10 +73,11 @@ int main(int argc, char **argv) {
 
 		printf("Performing measurement\n");
 
-		uint32_t messageSize = 1;
-		uint32_t rounds = (uint32_t) log2(MAX_BUFFER_SIZE);
+		uint32_t messageSize = 32;
+		// uint32_t rounds = (uint32_t) log2(MAX_BUFFER_SIZE);
+		uint32_t rounds = 1;
 
-		for(uint32_t sizeIndex = 0; sizeIndex <= rounds; ++sizeIndex) {
+		for(uint32_t sizeIndex = 0; sizeIndex < rounds; ++sizeIndex) {
 
 			printf("Receiving messages of size %d bytes\n", messageSize);
 			fflush(stdout);
@@ -120,10 +121,11 @@ int main(int argc, char **argv) {
 		context->defaultRequestToken->waitUntilCompleted();
 
 		printf("Performing measurement\n");
-		uint32_t rounds = (uint32_t) log2(MAX_BUFFER_SIZE);
-		uint32_t messageSize = 1;
+		//uint32_t rounds = (uint32_t) log2(MAX_BUFFER_SIZE);
+		uint32_t rounds = 1;
+		uint32_t messageSize = 32;
 
-		for(uint32_t sizeIndex = 0; sizeIndex <= rounds; ++sizeIndex) {
+		for(uint32_t sizeIndex = 0; sizeIndex < rounds; ++sizeIndex) {
 
 			printf("Sending messages of size %d bytes\t", messageSize);
 			fflush(stdout);
