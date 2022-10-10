@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 	if(isServer) {
 
 		printf("Creating buffers to read from and write to\n");
-		infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, 128 * sizeof(char));
+		infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, 256 * sizeof(char));
 		infinity::memory::RegionToken *bufferToken = bufferToReadWrite->createRegionToken();
 
 		printf("Creating buffers to receive a message\n");
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 
 
 		printf("Creating buffers\n");
-		infinity::memory::Buffer *buffer1Sided = new infinity::memory::Buffer(context, 32 * sizeof(char));
+		infinity::memory::Buffer *buffer1Sided = new infinity::memory::Buffer(context, 256 * sizeof(char));
 		infinity::memory::Buffer *buffer2Sided = new infinity::memory::Buffer(context, 128 * sizeof(char));
 
 		printf("Reading content from remote buffer\n");
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
 		requestToken.waitUntilCompleted();
 		
 		auto start = std::chrono::high_resolution_clock::now();
-		for (int i = 0; i < 1000*1000; i++) {
+		for (int i = 0; i < 1024 * 1024; i++) {
 			// printf("Writing content to remote buffer\n");
 			qp->write(buffer1Sided, remoteBufferToken, &requestToken);
 			requestToken.waitUntilCompleted();

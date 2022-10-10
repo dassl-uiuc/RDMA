@@ -6,6 +6,7 @@
  *
  */
 
+#include <chrono>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -23,7 +24,7 @@
 #define PORT_NUMBER 8011
 #define SERVER_IP "192.168.6.1"
 #define BUFFER_COUNT 1
-#define MAX_BUFFER_SIZE 4096
+#define MAX_BUFFER_SIZE 256
 #define OPERATIONS_COUNT 1024*1024
 
 uint64_t timeDiff(struct timeval stop, struct timeval start);
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
 
 		printf("Performing measurement\n");
 
-		uint32_t messageSize = 32;
+		uint32_t messageSize = 256;
 		// uint32_t rounds = (uint32_t) log2(MAX_BUFFER_SIZE);
 		uint32_t rounds = 1;
 
@@ -123,16 +124,16 @@ int main(int argc, char **argv) {
 		printf("Performing measurement\n");
 		//uint32_t rounds = (uint32_t) log2(MAX_BUFFER_SIZE);
 		uint32_t rounds = 1;
-		uint32_t messageSize = 32;
+		uint32_t messageSize = 256;
 
 		for(uint32_t sizeIndex = 0; sizeIndex < rounds; ++sizeIndex) {
 
 			printf("Sending messages of size %d bytes\t", messageSize);
 			fflush(stdout);
 
-			struct timeval start;
-			gettimeofday(&start, NULL);
-
+			//struct timeval start;
+			//gettimeofday(&start, NULL);
+			auto start = std::chrono::high_resolution_clock::now();
 			for(uint32_t i=0; i<OPERATIONS_COUNT; ++i) {
 				if(i %BUFFER_COUNT == 0 || i == OPERATIONS_COUNT) {
 
@@ -146,17 +147,19 @@ int main(int argc, char **argv) {
 
 				}
 			}
+			auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    	long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
+    	printf("Microseconds are %lld", microseconds);
+			//struct timeval stop;
+			//gettimeofday(&stop, NULL);
 
-			struct timeval stop;
-			gettimeofday(&stop, NULL);
+			//uint64_t time = timeDiff(stop, start);
+			//double msgRate = ((double)(OPERATIONS_COUNT * 1000000L)) / time;
+			//double bandwidth = ((double) (OPERATIONS_COUNT * messageSize)) / (1024*1024) / (((double) time) / 1000000L);
+			//printf("%.3f msg/sec\t%.6f MB/sec\n", msgRate, bandwidth);
+			//fflush(stdout);
 
-			uint64_t time = timeDiff(stop, start);
-			double msgRate = ((double)(OPERATIONS_COUNT * 1000000L)) / time;
-			double bandwidth = ((double) (OPERATIONS_COUNT * messageSize)) / (1024*1024) / (((double) time) / 1000000L);
-			printf("%.3f msg/sec\t%.3f MB/sec\n", msgRate, bandwidth);
-			fflush(stdout);
-
-			messageSize *= 2;
+			//messageSize *= 2;
 
 		}
 
