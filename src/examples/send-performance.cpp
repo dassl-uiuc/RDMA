@@ -24,7 +24,7 @@
 #define PORT_NUMBER 8011
 #define SERVER_IP "192.168.6.1"
 #define BUFFER_COUNT 1
-#define MAX_BUFFER_SIZE 256
+#define MAX_BUFFER_SIZE 4096
 #define OPERATIONS_COUNT 1024*1024
 
 uint64_t timeDiff(struct timeval stop, struct timeval start);
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
 		printf("Performing measurement\n");
 
-		uint32_t messageSize = 256;
+		uint32_t messageSize = 4096;
 		// uint32_t rounds = (uint32_t) log2(MAX_BUFFER_SIZE);
 		uint32_t rounds = 1;
 
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 		printf("Performing measurement\n");
 		//uint32_t rounds = (uint32_t) log2(MAX_BUFFER_SIZE);
 		uint32_t rounds = 1;
-		uint32_t messageSize = 256;
+		uint32_t messageSize = 4096;
 
 		for(uint32_t sizeIndex = 0; sizeIndex < rounds; ++sizeIndex) {
 

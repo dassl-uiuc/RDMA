@@ -101,6 +101,9 @@ public:
 	void write(infinity::memory::Buffer *buffer, infinity::memory::RegionToken *destination, infinity::requests::RequestToken *requestToken = NULL);
 	void write(infinity::memory::Buffer *buffer, infinity::memory::RegionToken *destination, uint32_t sizeInBytes,
 			infinity::requests::RequestToken *requestToken = NULL);
+	
+	void write(infinity::memory::Buffer *buffer, uint64_t localOffset, infinity::memory::RegionToken *destination, uint64_t remoteOffset, uint32_t sizeInBytes,  infinity::requests::RequestToken *requestToken = NULL);
+
 	void write(infinity::memory::Buffer *buffer, uint64_t localOffset, infinity::memory::RegionToken *destination, uint64_t remoteOffset, uint32_t sizeInBytes,
       OperationFlags flags, infinity::requests::RequestToken *requestToken = NULL);
 

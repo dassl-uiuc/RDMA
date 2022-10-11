@@ -255,6 +255,11 @@ void QueuePair::write(infinity::memory::Buffer* buffer, infinity::memory::Region
 }
 
 void QueuePair::write(infinity::memory::Buffer* buffer, uint64_t localOffset, infinity::memory::RegionToken* destination, uint64_t remoteOffset,
+    uint32_t sizeInBytes, infinity::requests::RequestToken *requestToken) {
+  write(buffer, localOffset, destination, remoteOffset, sizeInBytes, OperationFlags(), requestToken);
+}
+
+void QueuePair::write(infinity::memory::Buffer* buffer, uint64_t localOffset, infinity::memory::RegionToken* destination, uint64_t remoteOffset,
 		uint32_t sizeInBytes, OperationFlags send_flags, infinity::requests::RequestToken *requestToken) {
 
 	if (requestToken != NULL) {
