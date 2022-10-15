@@ -132,7 +132,9 @@ int main(int argc, char **argv) {
 	}
 
 	delete qp;
-	delete qp2;
+	if (!isServer) {
+		delete qp2;
+	}
 	delete qpFactory;
 	delete context;
 
