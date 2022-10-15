@@ -21,6 +21,7 @@
 
 #define PORT_NUMBER 8011
 #define SERVER_IP "192.168.6.1"
+#define SERVER2_IP "192.168.6.3"
 
 using namespace std;
 using std::chrono::high_resolution_clock;
@@ -48,6 +49,7 @@ int main(int argc, char **argv) {
 	infinity::core::Context *context = new infinity::core::Context();
 	infinity::queues::QueuePairFactory *qpFactory = new  infinity::queues::QueuePairFactory(context);
 	infinity::queues::QueuePair *qp;
+	infinity::queues::QueuePair *qp2;
 
 	if(isServer) {
 
@@ -77,15 +79,24 @@ int main(int argc, char **argv) {
 		qp = qpFactory->connectToRemoteHost(SERVER_IP, PORT_NUMBER);
 		infinity::memory::RegionToken *remoteBufferToken = (infinity::memory::RegionToken *) qp->getUserData();
 
+		qp2 = qpFactory->connectToRemoteHost(SERVER2_IP, PORT_NUMBER);
+		infinity::memory::RegionToken *remoteBufferToken2 = (infinity::memory::RegionToken *) qp2->getUserData();
 
 		printf("Creating buffers\n");
 		infinity::memory::Buffer *buffer1Sided = new infinity::memory::Buffer(context, 2048 * sizeof(char));
+		infinity::memory::Buffer *buffer1Sided2 = new infinity::memory::Buffer(context, 2048 * sizeof(char));
 		infinity::memory::Buffer *buffer2Sided = new infinity::memory::Buffer(context, 128 * sizeof(char));
+		infinity::memory::Buffer *buffer2Sided2 = new infinity::memory::Buffer(context, 128 * sizeof(char));
 
 		printf("Reading content from remote buffer\n");
 		infinity::requests::RequestToken requestToken(context);
 		qp->read(buffer1Sided, remoteBufferToken, &requestToken);
 		requestToken.waitUntilCompleted();
+
+		printf("Reading content from remote buffer\n");
+    infinity::requests::RequestToken requestToken2(context);
+    qp2->read(buffer1Sided2, remoteBufferToken2, &requestToken2);
+    requestToken2.waitUntilCompleted();
 		
 		auto start = std::chrono::high_resolution_clock::now();
 		for (int i = 0; i < 512; i++) {
@@ -100,12 +111,17 @@ int main(int argc, char **argv) {
 		qp->send(buffer2Sided, &requestToken);
 		requestToken.waitUntilCompleted();
 
+		qp2->send(buffer2Sided2, &requestToken2);
+    requestToken2.waitUntilCompleted();
 		delete buffer1Sided;
+		delete buffer1Sided2;
 		delete buffer2Sided;
+		delete buffer2Sided2;
 
 	}
 
 	delete qp;
+	delete qp2;
 	delete qpFactory;
 	delete context;
 
