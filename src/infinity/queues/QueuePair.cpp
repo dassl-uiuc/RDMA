@@ -465,6 +465,11 @@ void QueuePair::read(infinity::memory::Buffer* buffer, infinity::memory::RegionT
 }
 
 void QueuePair::read(infinity::memory::Buffer* buffer, uint64_t localOffset, infinity::memory::RegionToken* source, uint64_t remoteOffset, uint32_t sizeInBytes,
+   infinity::requests::RequestToken *requestToken) {
+	read(buffer, localOffset, source, remoteOffset, sizeInBytes, OperationFlags(), requestToken);
+}
+
+void QueuePair::read(infinity::memory::Buffer* buffer, uint64_t localOffset, infinity::memory::RegionToken* source, uint64_t remoteOffset, uint32_t sizeInBytes,
 		OperationFlags send_flags, infinity::requests::RequestToken *requestToken) {
 
 	if (requestToken != NULL) {

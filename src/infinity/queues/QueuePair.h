@@ -111,6 +111,8 @@ public:
 	void read(infinity::memory::Buffer *buffer, infinity::memory::RegionToken *source, uint32_t sizeInBytes, infinity::requests::RequestToken *requestToken =
 	NULL);
 	void read(infinity::memory::Buffer *buffer, uint64_t localOffset, infinity::memory::RegionToken *source, uint64_t remoteOffset, uint32_t sizeInBytes,
+      infinity::requests::RequestToken *requestToken = NULL);
+	void read(infinity::memory::Buffer *buffer, uint64_t localOffset, infinity::memory::RegionToken *source, uint64_t remoteOffset, uint32_t sizeInBytes,
 			OperationFlags flags, infinity::requests::RequestToken *requestToken = NULL);
 
 public:
