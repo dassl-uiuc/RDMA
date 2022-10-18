@@ -23,6 +23,8 @@
 #define SERVER_IP "192.168.6.1"
 #define SERVER2_IP "192.168.6.3"
 
+#define MSG_SIZE 64
+
 using namespace std;
 using std::chrono::high_resolution_clock;
 
@@ -54,7 +56,7 @@ int main(int argc, char **argv) {
   if(isServer) {
 
     printf("Creating buffers to read from and write to\n");
-    infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, 64 * 1024 * 1024 * sizeof(char));
+    infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, MSG_SIZE * 1024 * 1024 * sizeof(char));
     infinity::memory::RegionToken *bufferToken = bufferToReadWrite->createRegionToken();
 
     printf("Creating buffers to receive a message\n");
@@ -83,8 +85,8 @@ int main(int argc, char **argv) {
     infinity::memory::RegionToken *remoteBufferToken2 = (infinity::memory::RegionToken *) qp2->getUserData();
 
     printf("Creating buffers\n");
-    infinity::memory::Buffer *buffer1Sided = new infinity::memory::Buffer(context, 64 * sizeof(char));
-    infinity::memory::Buffer *buffer1Sided2 = new infinity::memory::Buffer(context, 64 * sizeof(char));
+    infinity::memory::Buffer *buffer1Sided = new infinity::memory::Buffer(context, MSG_SIZE * sizeof(char));
+    infinity::memory::Buffer *buffer1Sided2 = new infinity::memory::Buffer(context, MSG_SIZE * sizeof(char));
     infinity::memory::Buffer *buffer2Sided = new infinity::memory::Buffer(context, 128 * sizeof(char));
     infinity::memory::Buffer *buffer2Sided2 = new infinity::memory::Buffer(context, 128 * sizeof(char));
 
@@ -101,7 +103,7 @@ int main(int argc, char **argv) {
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 1024 * 1024; i++) {
       // printf("Writing content to remote buffer\n");
-      qp->write(buffer1Sided, 0, remoteBufferToken, 64 * i, 64, &requestToken);
+      qp->write(buffer1Sided, 0, remoteBufferToken, MSG_SIZE * i, MSG_SIZE, &requestToken);
       requestToken.waitUntilCompleted();
     }
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
@@ -114,7 +116,7 @@ int main(int argc, char **argv) {
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 1024 * 1024; i++) {
       // printf("Writing content to remote buffer\n");
-      qp2->write(buffer1Sided2, 0, remoteBufferToken2, 64 * i, 64, &requestToken2);
+      qp2->write(buffer1Sided2, 0, remoteBufferToken2, MSG_SIZE * i, MSG_SIZE, &requestToken2);
       requestToken2.waitUntilCompleted();
     }
     elapsed = std::chrono::high_resolution_clock::now() - start;
