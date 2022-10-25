@@ -302,6 +302,68 @@ void QueuePair::write(infinity::memory::Buffer* buffer, uint64_t localOffset, in
 
 }
 
+void QueuePair::batchwrite(infinity::memory::Buffer** buffers, int num_requests, uint64_t localOffset, infinity::memory::RegionToken* destination, uint64_t remoteOffset, uint32_t sizeInBytes, infinity::requests::RequestToken *requestToken) {
+
+	batchwrite(buffers, num_requests, localOffset, destination, remoteOffset, sizeInBytes, OperationFlags(), requestToken);
+}
+
+void QueuePair::batchwrite(infinity::memory::Buffer** buffers, int num_requests, uint64_t localOffset, infinity::memory::RegionToken* destination, uint64_t remoteOffset,
+		uint32_t sizeInBytes, OperationFlags send_flags, infinity::requests::RequestToken *requestToken) {
+
+	if (requestToken != NULL) {
+		requestToken->reset();
+		requestToken->setRegion(buffers[0]);
+	}
+
+	struct ibv_send_wr *badWorkRequest;
+	struct ibv_send_wr* head_wr = new ibv_send_wr();
+	struct ibv_send_wr* temp_head = head_wr;
+
+	for (int i = 0; i < num_requests; i++) {
+		struct ibv_sge sgElement;
+		memset(&sgElement, 0, sizeof(ibv_sge));
+		sgElement.addr = buffers[i]->getAddress() + localOffset;
+		sgElement.length = sizeInBytes;
+		sgElement.lkey = buffers[i]->getLocalKey();
+
+		INFINITY_ASSERT(sizeInBytes <= buffers[i]->getRemainingSizeInBytes(localOffset),
+			"[INFINITY][QUEUES][QUEUEPAIR] Segmentation fault while creating scatter-getter element.\n");
+
+		head_wr->wr_id = reinterpret_cast<uint64_t>(requestToken);
+		head_wr->sg_list = &sgElement;
+		head_wr->num_sge = 1;
+		head_wr->opcode = IBV_WR_RDMA_WRITE;
+		head_wr->send_flags = send_flags.ibvFlags();
+		if (requestToken != NULL) {
+			head_wr->send_flags |= IBV_SEND_SIGNALED;
+		}
+		head_wr->wr.rdma.remote_addr = destination->getAddress() + remoteOffset;
+		head_wr->wr.rdma.rkey = destination->getRemoteKey();
+
+		INFINITY_ASSERT(sizeInBytes <= destination->getRemainingSizeInBytes(remoteOffset), "[INFINITY][QUEUES][QUEUEPAIR] Segmentation fault while writing to remote memory.\n");
+		if (i != num_requests - 1) {
+			head_wr->next = new ibv_send_wr();
+			head_wr = head_wr->next;
+		}
+	}
+
+	int count = 0;
+	struct ibv_send_wr* temp = temp_head;
+	while (temp) {
+		count++;
+		temp = temp->next;
+	}
+	INFINITY_ASSERT(count == num_requests, "Count is %d instead of %d", count, num_requests);
+
+	int returnValue = ibv_post_send(this->ibvQueuePair, temp_head, &badWorkRequest);
+
+	printf("CHECK");
+	INFINITY_ASSERT(returnValue == 0, "[INFINITY][QUEUES][QUEUEPAIR] Posting write request failed. %d.\n", returnValue);
+
+	INFINITY_DEBUG("[INFINITY][QUEUES][QUEUEPAIR] Write request created (id %lu).\n", temp_head->wr_id);
+
+}
+
 void QueuePair::writeWithImmediate(infinity::memory::Buffer* buffer, uint64_t localOffset, infinity::memory::RegionToken* destination, uint64_t remoteOffset,
 		uint32_t sizeInBytes, uint32_t immediateValue, OperationFlags send_flags, infinity::requests::RequestToken* requestToken) {
 
@@ -345,6 +407,12 @@ void QueuePair::writeWithImmediate(infinity::memory::Buffer* buffer, uint64_t lo
 
 	INFINITY_DEBUG("[INFINITY][QUEUES][QUEUEPAIR] Write request created (id %lu).\n", workRequest.wr_id);
 
+}
+
+void QueuePair::multiWrite(infinity::memory::Buffer** buffers, uint32_t* sizesInBytes, uint64_t* localOffsets, uint32_t numberOfElements,
+    infinity::memory::RegionToken* destination, uint64_t remoteOffset, infinity::requests::RequestToken* requestToken){
+
+	multiWrite(buffers, sizesInBytes, localOffsets, numberOfElements, destination, remoteOffset, OperationFlags(), requestToken);
 }
 
 void QueuePair::multiWrite(infinity::memory::Buffer** buffers, uint32_t* sizesInBytes, uint64_t* localOffsets, uint32_t numberOfElements,
