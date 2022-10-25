@@ -14,7 +14,7 @@ PROJECT_NAME = libinfinity
 
 CC 					= g++
 CC_FLAGS 		= -O3 -std=c++0x
-LD_FLAGS		= -linfinity -libverbs
+LD_FLAGS		= -linfinity -libverbs -pthread
 
 ##################################################
 
