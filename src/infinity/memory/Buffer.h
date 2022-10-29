@@ -13,6 +13,8 @@
 #include <infinity/memory/Region.h>
 #include <infinity/memory/RegisteredMemory.h>
 
+#include <vector>
+
 namespace infinity {
 namespace memory {
 
@@ -21,6 +23,9 @@ class Buffer : public Region {
 public:
 
 	Buffer(infinity::core::Context *context, uint64_t sizeInBytes);
+	
+	// Constructor for integer buffer.
+	Buffer(infinity::core::Context *context, uint64_t sizeInBytes, std::vector<uint32_t> data);
 	Buffer(infinity::core::Context *context, infinity::memory::RegisteredMemory *memory, uint64_t offset, uint64_t sizeInBytes);
 	Buffer(infinity::core::Context *context, void *memory, uint64_t sizeInBytes);
 	~Buffer();
@@ -28,6 +33,7 @@ public:
 public:
 
 	void * getData();
+	uint32_t* getIntData();
 	void resize(uint64_t newSize, void *newData = NULL);
 
 protected:

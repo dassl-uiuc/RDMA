@@ -42,6 +42,10 @@ uint64_t Region::getRemainingSizeInBytes(uint64_t offset) {
 	return this->sizeInBytes - offset;
 }
 
+uint32_t* Region::getIntAddress() {
+	return reinterpret_cast<uint32_t*>(this->intdata);
+}
+
 uint64_t Region::getAddress() {
 	return reinterpret_cast<uint64_t>(this->data);
 }

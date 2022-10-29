@@ -6,6 +6,7 @@
  *
  */
 
+#include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -82,15 +83,26 @@ int main(int argc, char **argv) {
     qp = qpFactory->connectToRemoteHost(SERVER_IP, PORT_NUMBER);
     infinity::memory::RegionToken *remoteBufferToken = (infinity::memory::RegionToken *) qp->getUserData();
 
-    qp2 = qpFactory->connectToRemoteHost(SERVER2_IP, PORT_NUMBER);
-    infinity::memory::RegionToken *remoteBufferToken2 = (infinity::memory::RegionToken *) qp2->getUserData();
+    //qp2 = qpFactory->connectToRemoteHost(SERVER2_IP, PORT_NUMBER);
+    //infinity::memory::RegionToken *remoteBufferToken2 = (infinity::memory::RegionToken *) qp2->getUserData();
 
 		auto rdma_write = [](infinity::queues::QueuePair *qp, infinity::core::Context *context, infinity::memory::RegionToken* remoteBufferToken) {
 
     	printf("Creating buffers\n");
     	infinity::memory::Buffer *buffer1Sided = new infinity::memory::Buffer(context, MSG_SIZE * sizeof(char));
     	infinity::memory::Buffer *buffer2Sided = new infinity::memory::Buffer(context, 128 * sizeof(char));
-			
+		
+			// Test buffer.
+			printf("Test start\n");
+			vector<uint32_t> v;
+			v.push_back(5);
+			v.push_back(8);
+			infinity::memory::Buffer* testbuffer = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), v);
+			uint32_t* dat = testbuffer->getIntData();
+			std::cout << dat[0];
+			std::cout << dat[1] << std::endl;
+			printf("Test done");
+	
 			printf("Reading content from remote buffer\n");
     	infinity::requests::RequestToken requestToken(context);
     	qp->read(buffer1Sided, remoteBufferToken, &requestToken);
@@ -117,9 +129,9 @@ int main(int argc, char **argv) {
 		auto start = std::chrono::high_resolution_clock::now(); 
 		// Creating threads.
   	thread t1(rdma_write, qp, context, remoteBufferToken);
-  	thread t2(rdma_write, qp2, context, remoteBufferToken2);
+  	// thread t2(rdma_write, qp2, context, remoteBufferToken2);
   	t1.join();
-  	t2.join();
+  	// t2.join();
 		auto elapsed = std::chrono::high_resolution_clock::now() - start;
     long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
     printf("Total Microseconds are %lld", microseconds);

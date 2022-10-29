@@ -16,8 +16,31 @@
 
 #define MIN(a,b) (((a)<(b)) ? (a) : (b))
 
+using namespace std;
+
 namespace infinity {
 namespace memory {
+
+Buffer::Buffer(infinity::core::Context* context, uint64_t sizeInBytes, vector<uint32_t> data) {
+
+	this->context = context;
+  this->sizeInBytes = sizeInBytes;
+  this->memoryRegionType = RegionType::BUFFER;
+	//int res = posix_memalign(&(this->intdata), infinity::core::Configuration::PAGE_SIZE, sizeInBytes);
+	//INFINITY_ASSERT(res == 0, "[INFINITY][MEMORY][BUFFER] Cannot allocate and align buffer.\n");
+
+	this->intdata = new uint32_t[sizeInBytes/sizeof(uint32_t)];
+	for (int i = 0; i < data.size(); i++) {
+		this->intdata[i] = data[i];
+	}
+
+	this->ibvMemoryRegion = ibv_reg_mr(this->context->getProtectionDomain(), this->intdata, this->sizeInBytes,
+      IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ);
+  INFINITY_ASSERT(this->ibvMemoryRegion != NULL, "[INFINITY][MEMORY][BUFFER] Registration failed.\n");
+
+  this->memoryAllocated = true;
+  this->memoryRegistered = true;
+}
 
 Buffer::Buffer(infinity::core::Context* context, uint64_t sizeInBytes) {
 
@@ -28,7 +51,7 @@ Buffer::Buffer(infinity::core::Context* context, uint64_t sizeInBytes) {
 	int res = posix_memalign(&(this->data), infinity::core::Configuration::PAGE_SIZE, sizeInBytes);
 	INFINITY_ASSERT(res == 0, "[INFINITY][MEMORY][BUFFER] Cannot allocate and align buffer.\n");
 
-	memset(this->data, 0, sizeInBytes);
+	memset(this->data, '2', sizeInBytes);
 
 	this->ibvMemoryRegion = ibv_reg_mr(this->context->getProtectionDomain(), this->data, this->sizeInBytes,
 			IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ);
@@ -78,6 +101,10 @@ Buffer::~Buffer() {
 		free(this->data);
 	}
 
+}
+
+uint32_t* Buffer::getIntData() {
+	return this->getIntAddress();
 }
 
 void* Buffer::getData() {
