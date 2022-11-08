@@ -172,7 +172,8 @@ bool Context::receive(infinity::memory::Buffer** buffer, uint32_t *bytesWritten,
 bool Context::pollSendCompletionQueue() {
 
 	ibv_wc wc;
-	if (ibv_poll_cq(this->ibvSendCompletionQueue, 1, &wc) > 0) {
+	int result = ibv_poll_cq(this->ibvSendCompletionQueue, 1, &wc);
+	if (result > 0) {
 
 		infinity::requests::RequestToken * request = reinterpret_cast<infinity::requests::RequestToken*>(wc.wr_id);
 		if (request != NULL) {
@@ -182,7 +183,7 @@ bool Context::pollSendCompletionQueue() {
 		if (wc.status == IBV_WC_SUCCESS) {
 			INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] Request completed (id %lu).\n", wc.wr_id);
 		} else {
-			INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] Request failed (id %lu).\n", wc.wr_id);
+			INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] Request failed with error code %d (id %lu).\n", wc.status, wc.wr_id);
 		}
 		return true;
 	}

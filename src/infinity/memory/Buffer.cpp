@@ -28,7 +28,7 @@ Buffer::Buffer(infinity::core::Context* context, uint64_t sizeInBytes, vector<ui
   this->memoryRegionType = RegionType::BUFFER;
 	//int res = posix_memalign(&(this->intdata), infinity::core::Configuration::PAGE_SIZE, sizeInBytes);
 	//INFINITY_ASSERT(res == 0, "[INFINITY][MEMORY][BUFFER] Cannot allocate and align buffer.\n");
-
+	printf("Allocating %lu bytes \n", sizeInBytes);
 	this->intdata = new uint32_t[sizeInBytes/sizeof(uint32_t)];
 	for (int i = 0; i < data.size(); i++) {
 		this->intdata[i] = data[i];
@@ -40,6 +40,10 @@ Buffer::Buffer(infinity::core::Context* context, uint64_t sizeInBytes, vector<ui
 
   this->memoryAllocated = true;
   this->memoryRegistered = true;
+}
+
+void Buffer::UpdateIntMemory(int index, uint32_t value) {
+	this->intdata[index] = value;
 }
 
 Buffer::Buffer(infinity::core::Context* context, uint64_t sizeInBytes) {

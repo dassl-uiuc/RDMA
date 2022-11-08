@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
       long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
       printf("Microseconds are %lld", microseconds);
       printf("Sending message to remote host\n");
-      qp->send(buffer2Sided, &requestToken);
+      qp->send(testbuffer, &requestToken, true /* is_int */);
       requestToken.waitUntilCompleted();
 
       delete buffer1Sided;

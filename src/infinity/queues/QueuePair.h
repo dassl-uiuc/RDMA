@@ -93,10 +93,10 @@ public:
 	 * Buffer operations
 	 */
 
-	void send(infinity::memory::Buffer *buffer, infinity::requests::RequestToken *requestToken = NULL);
-	void send(infinity::memory::Buffer *buffer, uint32_t sizeInBytes, infinity::requests::RequestToken *requestToken = NULL);
+	void send(infinity::memory::Buffer *buffer, infinity::requests::RequestToken *requestToken = NULL, bool is_int = false);
+	void send(infinity::memory::Buffer *buffer, uint32_t sizeInBytes, infinity::requests::RequestToken *requestToken = NULL, bool is_int = false);
 	void send(infinity::memory::Buffer *buffer, uint64_t localOffset, uint32_t sizeInBytes, OperationFlags flags,
-      infinity::requests::RequestToken *requestToken = NULL);
+      infinity::requests::RequestToken *requestToken = NULL, bool is_int = false);
 
 	void write(infinity::memory::Buffer *buffer, infinity::memory::RegionToken *destination, infinity::requests::RequestToken *requestToken = NULL);
 	void write(infinity::memory::Buffer *buffer, infinity::memory::RegionToken *destination, uint32_t sizeInBytes,

@@ -34,6 +34,8 @@ public:
 
 	void * getData();
 	uint32_t* getIntData();
+	// Update one index in the integer array.
+	void UpdateIntMemory(int index, uint32_t value);
 	void resize(uint64_t newSize, void *newData = NULL);
 
 protected:

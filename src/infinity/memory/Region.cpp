@@ -46,6 +46,10 @@ uint32_t* Region::getIntAddress() {
 	return reinterpret_cast<uint32_t*>(this->intdata);
 }
 
+uint64_t Region::getIntAddressStart() {
+	return reinterpret_cast<uint64_t>(this->intdata);
+}
+
 uint64_t Region::getAddress() {
 	return reinterpret_cast<uint64_t>(this->data);
 }

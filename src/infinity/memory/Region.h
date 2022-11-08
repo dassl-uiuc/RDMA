@@ -36,6 +36,7 @@ public:
 	uint64_t getSizeInBytes();
 	uint64_t getRemainingSizeInBytes(uint64_t offset);
 	uint32_t* getIntAddress();
+	uint64_t getIntAddressStart();
 	uint64_t getAddress();
 	uint64_t getAddressWithOffset(uint64_t offset);
 	uint32_t getLocalKey();

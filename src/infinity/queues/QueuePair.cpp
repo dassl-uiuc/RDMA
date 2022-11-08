@@ -158,16 +158,16 @@ uint32_t QueuePair::getSequenceNumber() {
 	return this->sequenceNumber;
 }
 
-void QueuePair::send(infinity::memory::Buffer* buffer, infinity::requests::RequestToken *requestToken) {
-	send(buffer, 0, buffer->getSizeInBytes(), OperationFlags(), requestToken);
+void QueuePair::send(infinity::memory::Buffer* buffer, infinity::requests::RequestToken *requestToken, bool is_int) {
+	send(buffer, 0, buffer->getSizeInBytes(), OperationFlags(), requestToken, is_int);
 }
 
-void QueuePair::send(infinity::memory::Buffer* buffer, uint32_t sizeInBytes, infinity::requests::RequestToken *requestToken) {
-	send(buffer, 0, sizeInBytes, OperationFlags(), requestToken);
+void QueuePair::send(infinity::memory::Buffer* buffer, uint32_t sizeInBytes, infinity::requests::RequestToken *requestToken, bool is_int) {
+	send(buffer, 0, sizeInBytes, OperationFlags(), requestToken, is_int);
 }
 
 void QueuePair::send(infinity::memory::Buffer* buffer, uint64_t localOffset, uint32_t sizeInBytes, OperationFlags send_flags,
-    infinity::requests::RequestToken *requestToken) {
+    infinity::requests::RequestToken *requestToken, bool is_int) {
 
 	if (requestToken != NULL) {
 		requestToken->reset();
@@ -179,7 +179,11 @@ void QueuePair::send(infinity::memory::Buffer* buffer, uint64_t localOffset, uin
 	struct ibv_send_wr *badWorkRequest;
 
 	memset(&sgElement, 0, sizeof(ibv_sge));
-	sgElement.addr = buffer->getAddress() + localOffset;
+	if (is_int) {
+		sgElement.addr = buffer->getIntAddressStart() + localOffset;
+	} else {
+		sgElement.addr = buffer->getAddress() + localOffset;
+	}
 	sgElement.length = sizeInBytes;
 	sgElement.lkey = buffer->getLocalKey();
 
