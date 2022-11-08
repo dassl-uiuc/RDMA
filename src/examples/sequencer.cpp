@@ -169,6 +169,7 @@ int main(int argc, char **argv) {
         requestToken.waitUntilCompleted();
       }
 
+      delete receiveBuffer;
       delete buffer1Sided;
       delete buffer2Sided;
       delete testbuffer;
