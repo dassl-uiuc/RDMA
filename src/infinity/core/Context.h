@@ -80,7 +80,7 @@ public:
 	/**
 	 * Post a new buffer for receiving messages
 	 */
-	void postReceiveBuffer(infinity::memory::Buffer *buffer);
+	void postReceiveBuffer(infinity::memory::Buffer *buffer, bool is_int = false);
 
 public:
 

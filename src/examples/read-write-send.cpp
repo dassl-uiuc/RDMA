@@ -61,9 +61,16 @@ int main(int argc, char **argv) {
     infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, MSG_SIZE * 1024 * 1024 * sizeof(char));
     infinity::memory::RegionToken *bufferToken = bufferToReadWrite->createRegionToken();
 
+		vector<uint32_t> v(150, 0);
     printf("Creating buffers to receive a message\n");
-    infinity::memory::Buffer *bufferToReceive = new infinity::memory::Buffer(context, 128 * sizeof(char));
-    context->postReceiveBuffer(bufferToReceive);
+    infinity::memory::Buffer *bufferToReceive = new infinity::memory::Buffer(context, 150 * sizeof(uint32_t), v);
+		uint32_t* initdata = bufferToReceive->getIntData();
+		std::cout << initdata[0];
+		std::cout << initdata[1] << std::endl;
+    context->postReceiveBuffer(bufferToReceive, true /* int */);
+
+		// infinity::memory::Buffer *buffer2Sided = new infinity::memory::Buffer(context, 128 * sizeof(char));
+		// context->postReceiveBuffer(buffer2Sided);
 
     printf("Setting up connection (blocking)\n");
     qpFactory->bindToPort(PORT_NUMBER);
@@ -72,10 +79,15 @@ int main(int argc, char **argv) {
     printf("Waiting for message (blocking)\n");
     infinity::core::receive_element_t receiveElement;
     while(!context->receive(&receiveElement));
+		printf("Checking what we received!");
+		uint32_t* recvdata = bufferToReceive->getIntData();
+		std::cout << recvdata[0];
+		std::cout << recvdata[1] << std::endl;
 
     printf("Message received\n");
     delete bufferToReadWrite;
     delete bufferToReceive;
+		//delete buffer2Sided;
 
   } else {
 

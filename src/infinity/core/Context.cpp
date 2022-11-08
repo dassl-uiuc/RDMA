@@ -102,7 +102,7 @@ Context::~Context() {
 
 }
 
-void Context::postReceiveBuffer(infinity::memory::Buffer* buffer) {
+void Context::postReceiveBuffer(infinity::memory::Buffer* buffer, bool is_int) {
 
 	INFINITY_ASSERT(buffer->getSizeInBytes() <= std::numeric_limits<uint32_t>::max(),
 			"[INFINITY][CORE][CONTEXT] Cannot post receive buffer which is larger than max(uint32_t).\n");
@@ -110,7 +110,11 @@ void Context::postReceiveBuffer(infinity::memory::Buffer* buffer) {
 	// Create scatter-getter
 	ibv_sge isge;
 	memset(&isge, 0, sizeof(ibv_sge));
-	isge.addr = buffer->getAddress();
+	if (is_int) {
+		isge.addr = buffer->getIntAddressStart();
+	} else {
+		isge.addr = buffer->getAddress();
+	}
 	isge.length = static_cast<uint32_t>(buffer->getSizeInBytes());
 	isge.lkey = buffer->getLocalKey();
 
