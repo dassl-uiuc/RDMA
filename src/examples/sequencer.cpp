@@ -167,6 +167,10 @@ int main(int argc, char **argv) {
         testbuffer->UpdateIntMemory(0, i);
         qp->send(testbuffer, &requestToken, true /* is_int */);
         requestToken.waitUntilCompleted();
+        context->postReceiveBuffer(receiveElement.buffer, true /* is_int*/);
+        while(!context->receive(&receiveElement));
+        recvdata = receiveBuffer->getIntData();
+        std::cout << recvdata[0] << endl;
       }
 
       delete receiveBuffer;
