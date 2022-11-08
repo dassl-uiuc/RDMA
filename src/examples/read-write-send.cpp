@@ -85,6 +85,17 @@ int main(int argc, char **argv) {
     std::cout << recvdata[1] << std::endl;
 
     printf("Message received\n");
+    
+    printf("Waiting for message (blocking)\n");
+    context->postReceiveBuffer(receiveElement.buffer, true /* int */);
+    while(!context->receive(&receiveElement));
+    printf("Checking what we received!");
+    recvdata = bufferToReceive->getIntData();
+    std::cout << recvdata[0];
+    std::cout << recvdata[1] << std::endl;
+
+    printf("Message received\n");
+    
     delete bufferToReadWrite;
     delete bufferToReceive;
     //delete buffer2Sided;
