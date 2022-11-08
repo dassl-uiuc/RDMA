@@ -64,9 +64,9 @@ int main(int argc, char **argv) {
     infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, MSG_SIZE * 1024 * 1024 * sizeof(char));
     infinity::memory::RegionToken *bufferToken = bufferToReadWrite->createRegionToken();
 
-    vector<uint32_t> v(150, 0);
+    vector<uint32_t> v(2, 0);
     printf("Creating buffers to receive a message\n");
-    infinity::memory::Buffer *bufferToReceive = new infinity::memory::Buffer(context, 150 * sizeof(uint32_t), v);
+    infinity::memory::Buffer *bufferToReceive = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), v);
     uint32_t* initdata = bufferToReceive->getIntData();
     context->postReceiveBuffer(bufferToReceive, true /* int */);
 
@@ -88,6 +88,13 @@ int main(int argc, char **argv) {
     printf("Message received\n");
     std::atomic<int> counter(0);
 
+    vector<uint32_t> vsend(2, 0);
+    infinity::memory::Buffer* sendbuffer = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), vsend);
+    printf("Sending back first message to client");
+    infinity::requests::RequestToken requestToken(context);
+    qp->send(sendbuffer, &requestToken, true /* is_int */);
+    requestToken.waitUntilCompleted();
+
     for (int i = 0; i < 1000; i++) {
       context->postReceiveBuffer(receiveElement.buffer, true /* int */);
       while(!context->receive(&receiveElement));
@@ -104,6 +111,7 @@ int main(int argc, char **argv) {
     printf("Message received\n");
     delete bufferToReadWrite;
     delete bufferToReceive;
+    delete sendbuffer;
     //delete buffer2Sided;
 
   } else {
