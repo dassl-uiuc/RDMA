@@ -137,18 +137,19 @@ int main(int argc, char **argv) {
       qp->read(buffer1Sided, remoteBufferToken, &requestToken);
       requestToken.waitUntilCompleted();
 
-      auto start = std::chrono::high_resolution_clock::now();
-      for (int i = 0; i < 1024 * 1024; i++) {
-        // printf("Writing content to remote buffer\n");
-        qp->write(buffer1Sided, 0, remoteBufferToken, MSG_SIZE * i, MSG_SIZE, &requestToken);
-        requestToken.waitUntilCompleted();
-      }
-      auto elapsed = std::chrono::high_resolution_clock::now() - start;
-      long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
-      printf("Microseconds are %lld", microseconds);
       printf("Sending first message to remote host\n");
       qp->send(testbuffer, &requestToken, true /* is_int */);
       requestToken.waitUntilCompleted();
+
+      infinity::memory::Buffer *receiveBuffer = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), v);
+      context->postReceiveBuffer(receiveBuffer, true /* int */);
+      printf("Waiting for the first message from server (blocking)\n");
+      infinity::core::receive_element_t receiveElement;
+      while(!context->receive(&receiveElement));
+      printf("Checking what we received!");
+      uint32_t* recvdata = receiveBuffer->getIntData();
+      std::cout << recvdata[0];
+      std::cout << recvdata[1] << std::endl;
 
       for (int i = 0; i < 1000; i++) {
         printf("Sending message again");
