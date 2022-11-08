@@ -101,6 +101,9 @@ int main(int argc, char **argv) {
       recvdata = bufferToReceive->getIntData();
       std::cout << recvdata[0] << endl;
       counter++;
+      sendbuffer->UpdateIntMemory(0, counter);
+      qp->send(sendbuffer, &requestToken, true /* is_int */);
+      requestToken.waitUntilCompleted();
     }
     //while(!context->receive(&receiveElement));
     //printf("Checking what we received!");
