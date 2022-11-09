@@ -143,11 +143,11 @@ int main(int argc, char **argv) {
       std::cout << dat[1] << std::endl;
       printf("Test done");
 
-      printf("Reading content from remote buffer\n");
-      infinity::requests::RequestToken requestToken(context);
-      qp->read(buffer1Sided, remoteBufferToken, &requestToken);
-      requestToken.waitUntilCompleted();
+      //printf("Reading content from remote buffer\n");
+      //qp->read(buffer1Sided, remoteBufferToken, &requestToken);
+      //requestToken.waitUntilCompleted();
 
+      infinity::requests::RequestToken requestToken(context);
       printf("Sending first message to remote host\n");
       qp->send(testbuffer, &requestToken, true /* is_int */);
       requestToken.waitUntilCompleted();
@@ -162,16 +162,20 @@ int main(int argc, char **argv) {
       std::cout << recvdata[0];
       std::cout << recvdata[1] << std::endl;
 
-      for (int i = 0; i < 1000; i++) {
-        printf("Sending message again");
-        testbuffer->UpdateIntMemory(0, i);
+      auto start = std::chrono::high_resolution_clock::now();
+      for (int i = 0; i < 1000 * 1000; i++) {
+        //printf("Sending message again");
+        //testbuffer->UpdateIntMemory(0, i);
         qp->send(testbuffer, &requestToken, true /* is_int */);
         requestToken.waitUntilCompleted();
         context->postReceiveBuffer(receiveElement.buffer, true /* is_int*/);
         while(!context->receive(&receiveElement));
         recvdata = receiveBuffer->getIntData();
-        std::cout << recvdata[0] << endl;
+        //std::cout << recvdata[0] << endl;
       }
+      auto elapsed = std::chrono::high_resolution_clock::now() - start;
+      long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
+      printf("Total Microseconds are %lld", microseconds);
 
       delete receiveBuffer;
       delete buffer1Sided;
@@ -180,15 +184,11 @@ int main(int argc, char **argv) {
     };
 
     printf("Calculating the total time");
-    auto start = std::chrono::high_resolution_clock::now(); 
     // Creating threads.
     thread t1(rdma_write, qp, context, remoteBufferToken);
     // thread t2(rdma_write, qp2, context, remoteBufferToken2);
     t1.join();
     // t2.join();
-    auto elapsed = std::chrono::high_resolution_clock::now() - start;
-    long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
-    printf("Total Microseconds are %lld", microseconds);
   }
 
   delete qp;
