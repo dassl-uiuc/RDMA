@@ -26,6 +26,7 @@
 #include <infinity/requests/RequestToken.h>
 
 #define PORT_NUMBER 8011
+#define PORT_NUMBER2 8012
 #define SERVER_IP "192.168.6.1"
 #define SERVER2_IP "192.168.6.3"
 
@@ -61,68 +62,79 @@ int main(int argc, char **argv) {
 
   if(isServer) {
 
-    printf("Creating buffers to read from and write to\n");
-    infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, MSG_SIZE * 1024 * 1024 * sizeof(char));
-    infinity::memory::RegionToken *bufferToken = bufferToReadWrite->createRegionToken();
+    auto rdma_server = [] (int port) {
 
-    vector<uint32_t> v(2, 0);
-    printf("Creating buffers to receive a message\n");
-    infinity::memory::Buffer *bufferToReceive = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), v);
-    uint32_t* initdata = bufferToReceive->getIntData();
+      infinity::core::Context *context = new infinity::core::Context();
+      infinity::queues::QueuePairFactory *qpFactory = new  infinity::queues::QueuePairFactory(context);
 
-    map<uint32_t, infinity::queues::QueuePair*> clientid_map;
+      printf("Creating buffers to read from and write to\n");
+      infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, MSG_SIZE * 1024 * 1024 * sizeof(char));
+      infinity::memory::RegionToken *bufferToken = bufferToReadWrite->createRegionToken();
 
-    printf("Setting up connection (blocking)\n");
-    qpFactory->bindToPort(PORT_NUMBER);
+      vector<uint32_t> v(2, 0);
+      printf("Creating buffers to receive a message\n");
+      infinity::memory::Buffer *bufferToReceive = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), v);
+      uint32_t* initdata = bufferToReceive->getIntData();
 
-    int n = 1;
-    infinity::core::receive_element_t receiveElement;
-    infinity::queues::QueuePair *qps[n];
-    for (int i = 0; i < n; i++) {
-      qps[i] = qpFactory->acceptIncomingConnection(bufferToken, sizeof(infinity::memory::RegionToken));
-      printf("Waiting for the first message (blocking)\n");
-      context->postReceiveBuffer(bufferToReceive, true /* int */);
-      while(!context->receive(&receiveElement));
-      printf("Checking what we received!");
-      uint32_t* recvdata = bufferToReceive->getIntData();
-      std::cout << recvdata[0];
-      std::cout << recvdata[1] << std::endl;
+      map<uint32_t, infinity::queues::QueuePair*> clientid_map;
+
+      printf("Setting up connection (blocking)\n");
+      qpFactory->bindToPort(port);
+
+      int n = 1;
+      infinity::core::receive_element_t receiveElement;
+      infinity::queues::QueuePair *qps[n];
+      for (int i = 0; i < n; i++) {
+        qps[i] = qpFactory->acceptIncomingConnection(bufferToken, sizeof(infinity::memory::RegionToken));
+        printf("Waiting for the first message (blocking)\n");
+        context->postReceiveBuffer(bufferToReceive, true /* int */);
+        while(!context->receive(&receiveElement));
+        printf("Checking what we received!");
+        uint32_t* recvdata = bufferToReceive->getIntData();
+        std::cout << recvdata[0];
+        std::cout << recvdata[1] << std::endl;
+        printf("Message received\n");
+        clientid_map[recvdata[0]] = qps[i];
+      }
+
+      std::atomic<int> counter(0);
+
+      vector<uint32_t> vsend(2, 0);
+      infinity::memory::Buffer* sendbuffer = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), vsend);
+      infinity::requests::RequestToken requestToken(context);
+      for (int i = 0; i < n; i++) {
+        printf("Sending back first message to client");
+        qps[i]->send(sendbuffer, &requestToken, true /* is_int */);
+        requestToken.waitUntilCompleted();
+      }
+
+      auto start = std::chrono::high_resolution_clock::now();
+      for (int i = 0; i < n * 1000 * 1000; i++) {
+        context->postReceiveBuffer(receiveElement.buffer, true /* int */);
+        while(!context->receive(&receiveElement));
+        uint32_t* recvdata = bufferToReceive->getIntData();
+        //std::cout << recvdata[0] << endl;
+        //counter++;
+        //sendbuffer->UpdateIntMemory(0, counter);
+        clientid_map[recvdata[0]]->send(sendbuffer, &requestToken, true /* is_int */);
+        requestToken.waitUntilCompleted();
+      }
+
+      auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
+      printf("Total Microseconds are %lld", microseconds);
+
       printf("Message received\n");
-      clientid_map[recvdata[0]] = qps[i];
-    }
+      delete bufferToReadWrite;
+      delete bufferToReceive;
+      delete sendbuffer;
+      //delete buffer2Sided;
+    };
 
-    std::atomic<int> counter(0);
-
-    vector<uint32_t> vsend(2, 0);
-    infinity::memory::Buffer* sendbuffer = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), vsend);
-    infinity::requests::RequestToken requestToken(context);
-    for (int i = 0; i < n; i++) {
-      printf("Sending back first message to client");
-      qps[i]->send(sendbuffer, &requestToken, true /* is_int */);
-      requestToken.waitUntilCompleted();
-    }
-
-    auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < n * 1000 * 1000; i++) {
-      context->postReceiveBuffer(receiveElement.buffer, true /* int */);
-      while(!context->receive(&receiveElement));
-      uint32_t* recvdata = bufferToReceive->getIntData();
-      //std::cout << recvdata[0] << endl;
-      //counter++;
-      //sendbuffer->UpdateIntMemory(0, counter);
-      clientid_map[recvdata[0]]->send(sendbuffer, &requestToken, true /* is_int */);
-      requestToken.waitUntilCompleted();
-    }
-
-    auto elapsed = std::chrono::high_resolution_clock::now() - start;
-      long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
-    printf("Total Microseconds are %lld", microseconds);
-
-    printf("Message received\n");
-    delete bufferToReadWrite;
-    delete bufferToReceive;
-    delete sendbuffer;
-    //delete buffer2Sided;
+    thread t1(rdma_server, PORT_NUMBER);
+    thread t2(rdma_server, PORT_NUMBER2);
+    t1.join();
+    t2.join();
 
   } else {
 
