@@ -75,10 +75,10 @@ int main(int argc, char **argv) {
     printf("Setting up connection (blocking)\n");
     qpFactory->bindToPort(PORT_NUMBER);
 
-    int n = 2;
+    int n = 1;
     infinity::core::receive_element_t receiveElement;
     infinity::queues::QueuePair *qps[n];
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < n; i++) {
       qps[i] = qpFactory->acceptIncomingConnection(bufferToken, sizeof(infinity::memory::RegionToken));
       printf("Waiting for the first message (blocking)\n");
       context->postReceiveBuffer(bufferToReceive, true /* int */);
@@ -103,13 +103,13 @@ int main(int argc, char **argv) {
     }
 
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 2000 * 1000; i++) {
+    for (int i = 0; i < n * 1000 * 1000; i++) {
       context->postReceiveBuffer(receiveElement.buffer, true /* int */);
       while(!context->receive(&receiveElement));
       uint32_t* recvdata = bufferToReceive->getIntData();
       //std::cout << recvdata[0] << endl;
-      counter++;
-      sendbuffer->UpdateIntMemory(0, counter);
+      //counter++;
+      //sendbuffer->UpdateIntMemory(0, counter);
       clientid_map[recvdata[0]]->send(sendbuffer, &requestToken, true /* is_int */);
       requestToken.waitUntilCompleted();
     }
