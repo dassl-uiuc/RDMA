@@ -10,6 +10,7 @@
 
 #include <atomic>
 #include <iostream>
+#include <map>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -68,70 +69,54 @@ int main(int argc, char **argv) {
     printf("Creating buffers to receive a message\n");
     infinity::memory::Buffer *bufferToReceive = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), v);
     uint32_t* initdata = bufferToReceive->getIntData();
-    context->postReceiveBuffer(bufferToReceive, true /* int */);
 
-    // infinity::memory::Buffer *buffer2Sided = new infinity::memory::Buffer(context, 128 * sizeof(char));
-    // context->postReceiveBuffer(buffer2Sided);
+    map<uint32_t, infinity::queues::QueuePair*> clientid_map;
 
     printf("Setting up connection (blocking)\n");
     qpFactory->bindToPort(PORT_NUMBER);
-    qp = qpFactory->acceptIncomingConnection(bufferToken, sizeof(infinity::memory::RegionToken));
 
-    infinity::queues::QueuePair* qptest = qpFactory->acceptIncomingConnection();
-
-    printf("Waiting for the first message (blocking)\n");
+    int n = 2;
     infinity::core::receive_element_t receiveElement;
-    while(!context->receive(&receiveElement));
-    printf("Checking what we received!");
-    uint32_t* recvdata = bufferToReceive->getIntData();
-    std::cout << recvdata[0];
-    std::cout << recvdata[1] << std::endl;
+    infinity::queues::QueuePair *qps[n];
+    for (int i = 0; i < 2; i++) {
+      qps[i] = qpFactory->acceptIncomingConnection(bufferToken, sizeof(infinity::memory::RegionToken));
+      printf("Waiting for the first message (blocking)\n");
+      context->postReceiveBuffer(bufferToReceive, true /* int */);
+      while(!context->receive(&receiveElement));
+      printf("Checking what we received!");
+      uint32_t* recvdata = bufferToReceive->getIntData();
+      std::cout << recvdata[0];
+      std::cout << recvdata[1] << std::endl;
+      printf("Message received\n");
+      clientid_map[recvdata[0]] = qps[i];
+    }
 
-    printf("Message received\n");
     std::atomic<int> counter(0);
-
-    context->postReceiveBuffer(receiveElement.buffer, true /* int */);
-    while(!context->receive(&receiveElement));
-    recvdata = bufferToReceive->getIntData();
-    std::cout << recvdata[0] << endl;
 
     vector<uint32_t> vsend(2, 0);
     infinity::memory::Buffer* sendbuffer = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), vsend);
-    printf("Sending back first message to client");
     infinity::requests::RequestToken requestToken(context);
-    qp->send(sendbuffer, &requestToken, true /* is_int */);
-    requestToken.waitUntilCompleted();
+    for (int i = 0; i < n; i++) {
+      printf("Sending back first message to client");
+      qps[i]->send(sendbuffer, &requestToken, true /* is_int */);
+      requestToken.waitUntilCompleted();
+    }
 
-    qptest->send(sendbuffer, &requestToken, true /* is_int */);
-    requestToken.waitUntilCompleted();
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 2000 * 1000; i++) {
       context->postReceiveBuffer(receiveElement.buffer, true /* int */);
       while(!context->receive(&receiveElement));
-      recvdata = bufferToReceive->getIntData();
+      uint32_t* recvdata = bufferToReceive->getIntData();
       //std::cout << recvdata[0] << endl;
       counter++;
-      if (recvdata[0] == 5) {
-        sendbuffer->UpdateIntMemory(0, counter);
-        qp->send(sendbuffer, &requestToken, true /* is_int */);
-        requestToken.waitUntilCompleted();
-      } else {
-        sendbuffer->UpdateIntMemory(0, counter);
-        qptest->send(sendbuffer, &requestToken, true /* is_int */);
-        requestToken.waitUntilCompleted();
-      }
-      //sendbuffer->UpdateIntMemory(0, counter);
-      //qp->send(sendbuffer, &requestToken, true /* is_int */);
-      //requestToken.waitUntilCompleted();
+      sendbuffer->UpdateIntMemory(0, counter);
+      clientid_map[recvdata[0]]->send(sendbuffer, &requestToken, true /* is_int */);
+      requestToken.waitUntilCompleted();
     }
+
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
       long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
     printf("Total Microseconds are %lld", microseconds);
-    //while(!context->receive(&receiveElement));
-    //printf("Checking what we received!");
-    //recvdata = bufferToReceive->getIntData();
-    //std::cout << recvdata[0];
-    //std::cout << recvdata[1] << std::endl;
 
     printf("Message received\n");
     delete bufferToReadWrite;
