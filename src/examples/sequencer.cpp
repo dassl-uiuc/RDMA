@@ -141,15 +141,20 @@ int main(int argc, char **argv) {
 
   } else {
 
-    printf("Connecting to remote node\n");
-    qp = qpFactory->connectToRemoteHost(SERVER_IP, PORT_NUMBER);
-    infinity::memory::RegionToken *remoteBufferToken = (infinity::memory::RegionToken *) qp->getUserData();
+    //qp = qpFactory->connectToRemoteHost(SERVER_IP, PORT_NUMBER);
+    //infinity::memory::RegionToken *remoteBufferToken = (infinity::memory::RegionToken *) qp->getUserData();
 
     //qp2 = qpFactory->connectToRemoteHost(SERVER2_IP, PORT_NUMBER);
     //infinity::memory::RegionToken *remoteBufferToken2 = (infinity::memory::RegionToken *) qp2->getUserData();
 
-    auto rdma_write = [](infinity::queues::QueuePair *qp, infinity::core::Context *context, infinity::memory::RegionToken* remoteBufferToken) {
+    auto rdma_write = [](uint32_t id) {
 
+      infinity::core::Context *context = new infinity::core::Context();
+      infinity::queues::QueuePairFactory *qpFactory = new  infinity::queues::QueuePairFactory(context);
+
+      printf("Connecting to remote node\n");
+      infinity::queues::QueuePair *qpin = qpFactory->connectToRemoteHost(SERVER_IP, PORT_NUMBER);
+      infinity::memory::RegionToken *remoteBufferToken = (infinity::memory::RegionToken *) qpin->getUserData();
       printf("Creating buffers\n");
       infinity::memory::Buffer *buffer1Sided = new infinity::memory::Buffer(context, MSG_SIZE * sizeof(char));
       infinity::memory::Buffer *buffer2Sided = new infinity::memory::Buffer(context, 128 * sizeof(char));
@@ -157,7 +162,7 @@ int main(int argc, char **argv) {
       // Test buffer.
       printf("Test start\n");
       vector<uint32_t> v;
-      v.push_back(5);
+      v.push_back(id);
       v.push_back(8);
       infinity::memory::Buffer* testbuffer = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), v);
       uint32_t* dat = testbuffer->getIntData();
@@ -171,7 +176,7 @@ int main(int argc, char **argv) {
 
       infinity::requests::RequestToken requestToken(context);
       printf("Sending first message to remote host\n");
-      qp->send(testbuffer, &requestToken, true /* is_int */);
+      qpin->send(testbuffer, &requestToken, true /* is_int */);
       requestToken.waitUntilCompleted();
 
       infinity::memory::Buffer *receiveBuffer = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), v);
@@ -188,13 +193,14 @@ int main(int argc, char **argv) {
       for (int i = 0; i < 1000 * 1000; i++) {
         //printf("Sending message again");
         //testbuffer->UpdateIntMemory(0, i);
-        qp->send(testbuffer, &requestToken, true /* is_int */);
+        qpin->send(testbuffer, &requestToken, true /* is_int */);
         requestToken.waitUntilCompleted();
         context->postReceiveBuffer(receiveElement.buffer, true /* is_int*/);
         while(!context->receive(&receiveElement));
         recvdata = receiveBuffer->getIntData();
         //std::cout << recvdata[0] << endl;
       }
+      std::cout << "Final token" << recvdata[0] << endl;
       auto elapsed = std::chrono::high_resolution_clock::now() - start;
       long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
       printf("Total Microseconds are %lld", microseconds);
@@ -203,14 +209,15 @@ int main(int argc, char **argv) {
       delete buffer1Sided;
       delete buffer2Sided;
       delete testbuffer;
+      delete qpin;
     };
 
     printf("Calculating the total time");
     // Creating threads.
-    thread t1(rdma_write, qp, context, remoteBufferToken);
-    // thread t2(rdma_write, qp2, context, remoteBufferToken2);
+    thread t1(rdma_write, 0);
+    //thread t2(rdma_write, 1);
     t1.join();
-    // t2.join();
+    //t2.join();
   }
 
   delete qp;
