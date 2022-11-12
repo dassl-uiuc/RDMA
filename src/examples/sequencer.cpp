@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
       printf("Setting up connection (blocking)\n");
       qpFactory->bindToPort(port);
 
-      int n = 4;
+      int n = 2;
       infinity::core::receive_element_t receiveElement;
       infinity::queues::QueuePair *qps[n];
       for (int i = 0; i < n; i++) {
