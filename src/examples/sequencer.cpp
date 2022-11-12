@@ -213,9 +213,9 @@ int main(int argc, char **argv) {
     printf("Calculating the total time");
     // Creating threads.
     thread t1(rdma_write, 0);
-    //thread t2(rdma_write, 1);
+    thread t2(rdma_write, 1);
     t1.join();
-    //t2.join();
+    t2.join();
   }
 
   delete qp;
