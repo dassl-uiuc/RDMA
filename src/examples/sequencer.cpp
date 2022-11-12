@@ -68,12 +68,12 @@ int main(int argc, char **argv) {
       infinity::queues::QueuePairFactory *qpFactory = new  infinity::queues::QueuePairFactory(context);
 
       printf("Creating buffers to read from and write to\n");
-      infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, MSG_SIZE * 1024 * 1024 * sizeof(char));
-      infinity::memory::RegionToken *bufferToken = bufferToReadWrite->createRegionToken();
+      // infinity::memory::Buffer *bufferToReadWrite = new infinity::memory::Buffer(context, MSG_SIZE * 1024 * 1024 * sizeof(char));
 
       vector<uint32_t> v(2, 0);
       printf("Creating buffers to receive a message\n");
       infinity::memory::Buffer *bufferToReceive = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), v);
+      infinity::memory::RegionToken *bufferToken = bufferToReceive->createRegionToken();
       uint32_t* initdata = bufferToReceive->getIntData();
 
       map<uint32_t, infinity::queues::QueuePair*> clientid_map;
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
       printf("Setting up connection (blocking)\n");
       qpFactory->bindToPort(port);
 
-      int n = 1;
+      int n = 4;
       infinity::core::receive_element_t receiveElement;
       infinity::queues::QueuePair *qps[n];
       for (int i = 0; i < n; i++) {
@@ -108,8 +108,9 @@ int main(int argc, char **argv) {
         requestToken.waitUntilCompleted();
       }
 
+      int m = 1;
       auto start = std::chrono::high_resolution_clock::now();
-      for (int i = 0; i < n * 1000 * 1000; i++) {
+      for (int i = 0; i < n * m * 1000 * 1000; i++) {
         context->postReceiveBuffer(receiveElement.buffer, true /* int */);
         while(!context->receive(&receiveElement));
         uint32_t* recvdata = bufferToReceive->getIntData();
@@ -125,7 +126,7 @@ int main(int argc, char **argv) {
       printf("Total Microseconds are %lld", microseconds);
 
       printf("Message received\n");
-      delete bufferToReadWrite;
+      //delete bufferToReadWrite;
       delete bufferToReceive;
       delete sendbuffer;
       //delete buffer2Sided;
