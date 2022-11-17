@@ -60,7 +60,13 @@ BUILD_DIRECTORIES	= $(patsubst $(SOURCE_FOLDER)/%,$(BUILD_FOLDER)/%,$(SOURCE_DIR
 
 ##################################################
 
-all: library examples
+ifneq ($(filter shared_lib, $(MAKECMDGOALS)),)
+	CC_FLAGS += -fPIC
+endif
+
+##################################################
+
+all: static_lib examples
 
 ##################################################
 
@@ -71,9 +77,18 @@ $(BUILD_FOLDER)/%.o: $(SOURCE_FILES) $(HEADER_FILES)
 
 ##################################################
 
-library: $(OBJECT_FILES)
+static_lib: $(OBJECT_FILES)
 	mkdir -p $(RELEASE_FOLDER)
 	ar rvs $(RELEASE_FOLDER)/$(PROJECT_NAME).a $(OBJECT_FILES)
+	rm -rf $(RELEASE_FOLDER)/$(INCLUDE_FOLDER)
+	cp --parents $(HEADER_FILES) $(RELEASE_FOLDER)
+	mv $(RELEASE_FOLDER)/$(SOURCE_FOLDER)/ $(RELEASE_FOLDER)/$(INCLUDE_FOLDER)
+
+##################################################
+
+shared_lib: $(OBJECT_FILES)
+	mkdir -p $(RELEASE_FOLDER)
+	$(CC) -shared -o $(RELEASE_FOLDER)/$(PROJECT_NAME).so $(OBJECT_FILES)
 	rm -rf $(RELEASE_FOLDER)/$(INCLUDE_FOLDER)
 	cp --parents $(HEADER_FILES) $(RELEASE_FOLDER)
 	mv $(RELEASE_FOLDER)/$(SOURCE_FOLDER)/ $(RELEASE_FOLDER)/$(INCLUDE_FOLDER)
