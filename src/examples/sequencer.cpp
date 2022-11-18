@@ -150,13 +150,13 @@ int main(int argc, char **argv) {
     //qp2 = qpFactory->connectToRemoteHost(SERVER2_IP, PORT_NUMBER);
     //infinity::memory::RegionToken *remoteBufferToken2 = (infinity::memory::RegionToken *) qp2->getUserData();
 
-    auto rdma_write = [](uint32_t id) {
+    auto rdma_write = [](uint32_t id, uint16_t port) {
 
       infinity::core::Context *context = new infinity::core::Context();
       infinity::queues::QueuePairFactory *qpFactory = new  infinity::queues::QueuePairFactory(context);
 
       printf("Connecting to remote node\n");
-      infinity::queues::QueuePair *qpin = qpFactory->connectToRemoteHost(SERVER_IP, PORT_NUMBER);
+      infinity::queues::QueuePair *qpin = qpFactory->connectToRemoteHost(SERVER_IP, port);
       infinity::memory::RegionToken *remoteBufferToken = (infinity::memory::RegionToken *) qpin->getUserData();
       printf("Creating buffers\n");
       infinity::memory::Buffer *buffer1Sided = new infinity::memory::Buffer(context, MSG_SIZE * sizeof(char));
@@ -217,10 +217,15 @@ int main(int argc, char **argv) {
 
     printf("Calculating the total time");
     // Creating threads.
-    thread t1(rdma_write, 0);
-    thread t2(rdma_write, 1);
-    t1.join();
-    t2.join();
+    int n = 24;
+    thread mythreads[n];
+    for (int i = 0; i < n; i++) {
+      mythreads[i] = std::thread(rdma_write, i, 8011 + i);
+    }
+
+    for (int i = 0; i < n; i++) {
+      mythreads[i].join();
+    }
   }
 
   delete qp;
