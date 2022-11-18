@@ -32,6 +32,8 @@
 
 #define MSG_SIZE 64
 
+std::atomic<int> counter(0);
+
 using namespace std;
 using std::chrono::high_resolution_clock;
 
@@ -81,7 +83,7 @@ int main(int argc, char **argv) {
       printf("Setting up connection (blocking)\n");
       qpFactory->bindToPort(port);
 
-      int n = 2;
+      int n = 1;
       infinity::core::receive_element_t receiveElement;
       infinity::queues::QueuePair *qps[n];
       for (int i = 0; i < n; i++) {
@@ -96,8 +98,6 @@ int main(int argc, char **argv) {
         printf("Message received\n");
         clientid_map[recvdata[0]] = qps[i];
       }
-
-      std::atomic<int> counter(0);
 
       vector<uint32_t> vsend(2, 0);
       infinity::memory::Buffer* sendbuffer = new infinity::memory::Buffer(context, 2 * sizeof(uint32_t), vsend);
@@ -115,8 +115,8 @@ int main(int argc, char **argv) {
         while(!context->receive(&receiveElement));
         uint32_t* recvdata = bufferToReceive->getIntData();
         //std::cout << recvdata[0] << endl;
-        //counter++;
-        //sendbuffer->UpdateIntMemory(0, counter);
+        counter++;
+        sendbuffer->UpdateIntMemory(0, counter);
         clientid_map[recvdata[0]]->send(sendbuffer, &requestToken, true /* is_int */);
         requestToken.waitUntilCompleted();
       }
@@ -132,10 +132,15 @@ int main(int argc, char **argv) {
       //delete buffer2Sided;
     };
 
-    thread t1(rdma_server, PORT_NUMBER);
-    thread t2(rdma_server, PORT_NUMBER2);
-    t1.join();
-    t2.join();
+    int n = 24;
+    thread mythreads[n];
+    for (int i = 0; i < n; i++) {
+      mythreads[i] = std::thread(rdma_server, 8011 + i);
+    }
+
+    for (int i = 0; i < n; i++) {
+      mythreads[i].join();
+    }
 
   } else {
 
