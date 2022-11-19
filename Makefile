@@ -66,29 +66,20 @@ endif
 
 ##################################################
 
-all: static_lib examples
+all: library examples
 
 ##################################################
 
 $(BUILD_FOLDER)/%.o: $(SOURCE_FILES) $(HEADER_FILES)
 	mkdir -p $(BUILD_FOLDER)
 	mkdir -p $(BUILD_DIRECTORIES)
-	$(CC) $(CC_FLAGS) -c $(SOURCE_FOLDER)/$*.cpp -I $(SOURCE_FOLDER) -o $(BUILD_FOLDER)/$*.o
+	$(CC) $(CC_FLAGS) -fPIC -c $(SOURCE_FOLDER)/$*.cpp -I $(SOURCE_FOLDER) -o $(BUILD_FOLDER)/$*.o
 
 ##################################################
 
-static_lib: $(OBJECT_FILES)
+library: $(OBJECT_FILES)
 	mkdir -p $(RELEASE_FOLDER)
 	ar rvs $(RELEASE_FOLDER)/$(PROJECT_NAME).a $(OBJECT_FILES)
-	rm -rf $(RELEASE_FOLDER)/$(INCLUDE_FOLDER)
-	cp --parents $(HEADER_FILES) $(RELEASE_FOLDER)
-	mv $(RELEASE_FOLDER)/$(SOURCE_FOLDER)/ $(RELEASE_FOLDER)/$(INCLUDE_FOLDER)
-
-##################################################
-
-shared_lib: $(OBJECT_FILES)
-	mkdir -p $(RELEASE_FOLDER)
-	$(CC) -shared -o $(RELEASE_FOLDER)/$(PROJECT_NAME).so $(OBJECT_FILES)
 	rm -rf $(RELEASE_FOLDER)/$(INCLUDE_FOLDER)
 	cp --parents $(HEADER_FILES) $(RELEASE_FOLDER)
 	mv $(RELEASE_FOLDER)/$(SOURCE_FOLDER)/ $(RELEASE_FOLDER)/$(INCLUDE_FOLDER)
