@@ -152,6 +152,7 @@ int main(int argc, char **argv) {
 
     auto rdma_write = [](uint32_t id, uint16_t port) {
 
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
       infinity::core::Context *context = new infinity::core::Context();
       infinity::queues::QueuePairFactory *qpFactory = new  infinity::queues::QueuePairFactory(context);
 
@@ -192,18 +193,20 @@ int main(int argc, char **argv) {
       std::cout << recvdata[0];
       std::cout << recvdata[1] << std::endl;
 
+      int m = 1;
       auto start = std::chrono::high_resolution_clock::now();
-      for (int i = 0; i < 1000 * 1000; i++) {
+      for (int i = 0; i < m * 1000 * 1000; i++) {
         //printf("Sending message again");
         //testbuffer->UpdateIntMemory(0, i);
+        context->postReceiveBuffer(receiveElement.buffer, true /* is_int*/);
         qpin->send(testbuffer, &requestToken, true /* is_int */);
         requestToken.waitUntilCompleted();
-        context->postReceiveBuffer(receiveElement.buffer, true /* is_int*/);
+        //context->postReceiveBuffer(receiveElement.buffer, true /* is_int*/);
         while(!context->receive(&receiveElement));
-        recvdata = receiveBuffer->getIntData();
+        //recvdata = receiveBuffer->getIntData();
         //std::cout << recvdata[0] << endl;
       }
-      std::cout << "Final token" << recvdata[0] << endl;
+      //std::cout << "Final token" << recvdata[0] << endl;
       auto elapsed = std::chrono::high_resolution_clock::now() - start;
       long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
       printf("Total Microseconds are %lld", microseconds);
@@ -217,7 +220,7 @@ int main(int argc, char **argv) {
 
     printf("Calculating the total time");
     // Creating threads.
-    int n = 24;
+    int n = 16;
     thread mythreads[n];
     for (int i = 0; i < n; i++) {
       mythreads[i] = std::thread(rdma_write, i, 8011 + i);
