@@ -60,12 +60,13 @@ BUILD_DIRECTORIES	= $(patsubst $(SOURCE_FOLDER)/%,$(BUILD_FOLDER)/%,$(SOURCE_DIR
 
 ##################################################
 
-ifneq ($(filter shared_lib, $(MAKECMDGOALS)),)
-	CC_FLAGS += -fPIC
+ifneq ($(filter debug, $(MAKECMDGOALS)),)
+	CC_FLAGS += -g -pg -DINFINITY_DEBUG_ON -DINFINITY_ASSERT_ON
 endif
 
 ##################################################
 
+debug: all
 all: library examples
 
 ##################################################
@@ -92,7 +93,7 @@ clean:
 
 ##################################################
 
-examples:
+examples: library
 	mkdir -p $(RELEASE_FOLDER)/$(EXAMPLES_FOLDER)
 	$(CC) src/examples/read-write-send.cpp $(CC_FLAGS) $(LD_FLAGS) -I $(RELEASE_FOLDER)/$(INCLUDE_FOLDER) -L $(RELEASE_FOLDER) -o $(RELEASE_FOLDER)/$(EXAMPLES_FOLDER)/read-write-send
 	$(CC) src/examples/send-performance.cpp $(CC_FLAGS) $(LD_FLAGS) -I $(RELEASE_FOLDER)/$(INCLUDE_FOLDER) -L $(RELEASE_FOLDER) -o $(RELEASE_FOLDER)/$(EXAMPLES_FOLDER)/send-performance
