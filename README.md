@@ -1,3 +1,20 @@
+# Getting to run RDMA on Cloudlab.
+
+First, we need to have machines with either ConnectX4 or ConnectX5 NIC connected to the same switch.
+Then, read and use the install.sh script in this directory to install the drivers and reboot the cloudlab machines.
+
+A detailed documentation about debugging steps and progress about installation can be found here -
+https://docs.google.com/document/d/1KKPbAVcWff8ao5jKimIWggsZqlWtJh6IUnaEktA2gto/edit?pli=1
+
+This also contains a genilib script to create the xl170 cloudlab machines.
+
+There are few files in the /src/examples directory which are built over the RDMA infrastructure.
+
+The sequencer file there is a custom sequencer which runs as a closed loop. The system is multi-threaded and a quick read of the code will enable you to modify the code to use appropriate number of threads and number of requests per thread. Relevant documentation is present in the examples directory.
+
+
+# Original documentation starts here.
+
 # Infinity - A lightweight C++ RDMA library for InfiniBand
 
 Infinity is a simple, powerful, object-oriented abstraction of ibVerbs. The library enables users to build sophisticated applications that use Remote Direct Memory Access (RDMA) without sacrificing performance. It significantly lowers the barrier to get started with RDMA programming. Infinity provides support for two-sided (send/receive) as well as one-sided (read/write/atomic) operations. The library is written in C++ and has been ported to Rust ([Infinity-Rust](https://github.com/utaal/infinity-rust/)) by @utaal.
