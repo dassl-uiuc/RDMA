@@ -62,7 +62,7 @@ public:
 	/**
 	 * Constructors
 	 */
-	Context(uint16_t device = 3, uint16_t devicePort = 1);
+	Context(uint16_t device = 2, uint16_t devicePort = 1);
 
 	/**
 	 * Destructor

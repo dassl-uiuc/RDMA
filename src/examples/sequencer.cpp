@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
       printf("Setting up connection (blocking)\n");
       qpFactory->bindToPort(port);
 
-      int n = 1;
+      int n = 2;
       infinity::core::receive_element_t receiveElement;
       infinity::queues::QueuePair *qps[n];
       for (int i = 0; i < n; i++) {
@@ -110,14 +110,16 @@ int main(int argc, char **argv) {
 
       int m = 1;
       auto start = std::chrono::high_resolution_clock::now();
+      context->postReceiveBuffer(receiveElement.buffer, true /* int */);
       for (int i = 0; i < n * m * 1000 * 1000; i++) {
-        context->postReceiveBuffer(receiveElement.buffer, true /* int */);
+        //context->postReceiveBuffer(receiveElement.buffer, true /* int */);
         while(!context->receive(&receiveElement));
         uint32_t* recvdata = bufferToReceive->getIntData();
         //std::cout << recvdata[0] << endl;
         counter++;
         sendbuffer->UpdateIntMemory(0, counter);
         clientid_map[recvdata[0]]->send(sendbuffer, &requestToken, true /* is_int */);
+	context->postReceiveBuffer(receiveElement.buffer, true /* int */);
         requestToken.waitUntilCompleted();
       }
 
@@ -132,7 +134,7 @@ int main(int argc, char **argv) {
       //delete buffer2Sided;
     };
 
-    int n = 24;
+    int n = 8;
     thread mythreads[n];
     for (int i = 0; i < n; i++) {
       mythreads[i] = std::thread(rdma_server, 8011 + i);
@@ -220,7 +222,7 @@ int main(int argc, char **argv) {
 
     printf("Calculating the total time");
     // Creating threads.
-    int n = 16;
+    int n = 8;
     thread mythreads[n];
     for (int i = 0; i < n; i++) {
       mythreads[i] = std::thread(rdma_write, i, 8011 + i);
