@@ -11,9 +11,13 @@ The device id corresponds to the index in the list of the RDMA devices.
 You should run the following comnad -
 
 sarthakm@node-0:~/RDMA$ sudo /opt/mellanox/iproute2/sbin/rdma link
+
 link mlx5_0/1 state ACTIVE physical_state LINK_UP netdev eno33
+
 link mlx5_1/1 state DOWN physical_state DISABLED netdev eno34
+
 link mlx5_2/1 state ACTIVE physical_state LINK_UP netdev enp65s0f0
+
 link mlx5_3/1 state DOWN physical_state DISABLED netdev enp65s0f1
 
 Here, for instance, we used mlx5_2/1 for our tests, which corresponds to index 2 in the entire list. (This is 0 indexed)
