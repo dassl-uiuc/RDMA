@@ -13,5 +13,10 @@ sudo /etc/init.d/openibd restart
 # After this step, we must reboot the machine for the networks to reflect
 # in the ifconfig.
 # Now, we can make the RDMA directory, change the Configuration.h file
-# with the name of the network interface on which RDMA is hosted
-# and get started!!
+# with the name of the network interface on which RDMA is hosted.
+# You must also change the index in the Context.h file constructor.
+# This index is the index at which your NIC is hosted. More details are present in the
+# README which links to the detailed documentation and also in the README inside the 
+# src/examples directory where an example is illustrated.
+
+# Now you can get started!!
