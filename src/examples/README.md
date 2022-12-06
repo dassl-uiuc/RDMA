@@ -29,3 +29,7 @@ After making these changes and installing the drivers etc, you can optionally do
 to the README in RDMA directory.
 
 After compiling the library, these performance runs can be reproduced!
+
+Note that the sequencer in the current implementation is configured such that each server thread will connect to two client threads.
+The value of `n` in the rdma_server lambda method decides that. So if you want to connect one server thread with one client thread, that
+value would need to be changed to 1.
