@@ -88,7 +88,6 @@ QueuePair * QueuePairFactory::acceptIncomingConnection(void *userData, uint32_t 
 	INFINITY_ASSERT(returnValue == sizeof(serializedQueuePair), "[INFINITY][QUEUES][FACTORY] Incorrect number of bytes received. Expected %lu. Received %d.\n",
 			sizeof(serializedQueuePair), returnValue);
 	printf("S2\n");
-	//sleep(5);
 	QueuePair *queuePair = new QueuePair(this->context);
 	printf("S3\n");
 	sendBuffer->localDeviceId = queuePair->getLocalDeviceId();

@@ -65,7 +65,6 @@ QueuePair::QueuePair(infinity::core::Context* context) :
 
 	qpAttributes.qp_access_flags = IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_ATOMIC;
 	printf("S14\n");
-	sleep(5);
 	int32_t returnValue = ibv_modify_qp(this->ibvQueuePair, &(qpAttributes), IBV_QP_STATE | IBV_QP_PORT | IBV_QP_ACCESS_FLAGS | IBV_QP_PKEY_INDEX);
 	printf("S21\n");
 	INFINITY_ASSERT(returnValue == 0, "[INFINITY][QUEUES][QUEUEPAIR] Cannot transition to INIT state.\n");
