@@ -9,6 +9,8 @@
 #ifndef QUEUES_QUEUEPAIRFACTORY_H_
 #define QUEUES_QUEUEPAIRFACTORY_H_
 
+#include <string>
+
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -44,11 +46,18 @@ public:
 	 */
 	QueuePair * createLoopback(void *userData = NULL, uint32_t userDataSizeInBytes = 0);
 
+	/**
+	 * Get ip address of this device
+	 */
+	std::string &getIpAddress() { return ipAddress; }
+
 protected:
 
 	infinity::core::Context * context;
 
 	int32_t serverSocket;
+
+	std::string ipAddress;
 
 };
 
