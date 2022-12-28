@@ -14,11 +14,24 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+
+#include <infinity/core/Configuration.h>
 #include <infinity/core/Context.h>
 #include <infinity/queues/QueuePair.h>
 
 namespace infinity {
 namespace queues {
+
+typedef struct {
+
+	uint16_t localDeviceId;
+	uint32_t queuePairNumber;
+	uint32_t sequenceNumber;
+	uint32_t userDataSize;
+	char userData[infinity::core::Configuration::MAX_CONNECTION_USER_DATA_SIZE];
+	union ibv_gid gid;
+
+} serializedQueuePair;
 
 class QueuePairFactory {
 public:
@@ -35,6 +48,19 @@ public:
 	 * Accept incoming connection request (passive side)
 	 */
 	QueuePair * acceptIncomingConnection(void *userData = NULL, uint32_t userDataSizeInBytes = 0);
+
+	/**
+	 * Accept incoming connection request without creating a qp
+	 * @return socket for the accepted connection
+	 */
+	int waitIncomingConnection(serializedQueuePair **recvBuf);
+
+	/**
+	 * Reply to the incomming connection with MR info and create a qp
+	 * @param socket the connection socket used for reply
+	 * @return the created qp
+	 */
+	QueuePair * replyIncomingConnection(int socket, serializedQueuePair* recvBuf, void *userData = NULL, uint32_t userDataSizeInBytes = 0);
 
 	/**
 	 * Connect to remote machine (active side)

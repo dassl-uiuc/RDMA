@@ -13,23 +13,11 @@
 #include <arpa/inet.h>
 #include  <sys/socket.h>
 
-#include <infinity/core/Configuration.h>
 #include <infinity/utils/Debug.h>
 #include <infinity/utils/Address.h>
 
 namespace infinity {
 namespace queues {
-
-typedef struct {
-
-	uint16_t localDeviceId;
-	uint32_t queuePairNumber;
-	uint32_t sequenceNumber;
-	uint32_t userDataSize;
-	char userData[infinity::core::Configuration::MAX_CONNECTION_USER_DATA_SIZE];
-	union ibv_gid gid;
-
-} serializedQueuePair;
 
 QueuePairFactory::QueuePairFactory(infinity::core::Context *context) {
 
@@ -74,19 +62,31 @@ void QueuePairFactory::bindToPort(uint16_t port) {
 }
 
 QueuePair * QueuePairFactory::acceptIncomingConnection(void *userData, uint32_t userDataSizeInBytes) {
+	serializedQueuePair *recvBuf;
+	int sendSocket = waitIncomingConnection(&recvBuf);
+	return replyIncomingConnection(sendSocket, recvBuf, userData, userDataSizeInBytes);
+}
 
-	INFINITY_ASSERT(userDataSizeInBytes < infinity::core::Configuration::MAX_CONNECTION_USER_DATA_SIZE,
-			"[INFINITY][QUEUES][FACTORY] User data size is too large.\n")
+int QueuePairFactory::waitIncomingConnection(serializedQueuePair **recvBuf) {
 	printf("S1\n");
-	serializedQueuePair *receiveBuffer = (serializedQueuePair*) calloc(1, sizeof(serializedQueuePair));
-	serializedQueuePair *sendBuffer = (serializedQueuePair*) calloc(1, sizeof(serializedQueuePair));
-
 	int connectionSocket = accept(this->serverSocket, (sockaddr *) NULL, NULL);
 	INFINITY_ASSERT(connectionSocket >= 0, "[INFINITY][QUEUES][FACTORY] Cannot open connection socket.\n");
 
+	serializedQueuePair *receiveBuffer = (serializedQueuePair*) calloc(1, sizeof(serializedQueuePair));
 	int32_t returnValue = recv(connectionSocket, receiveBuffer, sizeof(serializedQueuePair), 0);
 	INFINITY_ASSERT(returnValue == sizeof(serializedQueuePair), "[INFINITY][QUEUES][FACTORY] Incorrect number of bytes received. Expected %lu. Received %d.\n",
 			sizeof(serializedQueuePair), returnValue);
+	*recvBuf = receiveBuffer;
+	return connectionSocket;
+}
+
+QueuePair * QueuePairFactory::replyIncomingConnection(int socket, serializedQueuePair* receiveBuffer, void *userData, uint32_t userDataSizeInBytes) {
+	INFINITY_ASSERT(userDataSizeInBytes < infinity::core::Configuration::MAX_CONNECTION_USER_DATA_SIZE,
+			"[INFINITY][QUEUES][FACTORY] User data size is too large.\n")
+	
+	int32_t returnValue;
+	serializedQueuePair *sendBuffer = (serializedQueuePair*) calloc(1, sizeof(serializedQueuePair));
+	
 	printf("S2\n");
 	QueuePair *queuePair = new QueuePair(this->context);
 	printf("S3\n");
@@ -97,7 +97,7 @@ QueuePair * QueuePairFactory::acceptIncomingConnection(void *userData, uint32_t 
 	sendBuffer->gid = queuePair->getLocalGid();
 	memcpy(sendBuffer->userData, userData, userDataSizeInBytes);
 	printf("S4\n");
-	returnValue = send(connectionSocket, sendBuffer, sizeof(serializedQueuePair), 0);
+	returnValue = send(socket, sendBuffer, sizeof(serializedQueuePair), 0);
 	INFINITY_ASSERT(returnValue == sizeof(serializedQueuePair),
 			"[INFINITY][QUEUES][FACTORY] Incorrect number of bytes transmitted. Expected %lu. Received %d.\n", sizeof(serializedQueuePair), returnValue);
 
@@ -110,12 +110,11 @@ QueuePair * QueuePairFactory::acceptIncomingConnection(void *userData, uint32_t 
 	printf("S6\n");
 	this->context->registerQueuePair(queuePair);
 
-	close(connectionSocket);
+	close(socket);
 	free(receiveBuffer);
 	free(sendBuffer);
 
 	return queuePair;
-
 }
 
 QueuePair * QueuePairFactory::connectToRemoteHost(const char* hostAddress, uint16_t port, void *userData, uint32_t userDataSizeInBytes) {
