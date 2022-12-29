@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <arpa/inet.h>
-#include  <sys/socket.h>
+#include <sys/socket.h>
 
 #include <infinity/utils/Debug.h>
 #include <infinity/utils/Address.h>

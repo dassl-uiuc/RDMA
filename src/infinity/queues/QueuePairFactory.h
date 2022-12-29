@@ -77,6 +77,11 @@ public:
 	 */
 	std::string &getIpAddress() { return ipAddress; }
 
+	/**
+	 * Get the socket for accepting incoming connection
+	 */
+	int getServerSocket() { return serverSocket; }
+
 protected:
 
 	infinity::core::Context * context;
