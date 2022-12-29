@@ -23,7 +23,9 @@ QueuePairFactory::QueuePairFactory(infinity::core::Context *context) {
 
 	this->context = context;
 	this->serverSocket = -1;
-
+	char *ipAddressOfDevice = infinity::utils::Address::getIpAddressOfInterface(infinity::core::Configuration::DEFAULT_IB_DEVICE);
+	ipAddress = ipAddressOfDevice;
+	free(ipAddressOfDevice);
 }
 
 QueuePairFactory::~QueuePairFactory() {
@@ -54,11 +56,7 @@ void QueuePairFactory::bindToPort(uint16_t port) {
 	returnValue = listen(serverSocket, 128);
 	INFINITY_ASSERT(returnValue == 0, "[INFINITY][QUEUES][FACTORY] Cannot listen on server socket.\n");
 
-	char *ipAddressOfDevice = infinity::utils::Address::getIpAddressOfInterface(infinity::core::Configuration::DEFAULT_IB_DEVICE);
-	INFINITY_DEBUG("[INFINITY][QUEUES][FACTORY] Accepting connections on IP address %s and port %d.\n", ipAddressOfDevice, port);
-	ipAddress = ipAddressOfDevice;
-	free(ipAddressOfDevice);
-
+	INFINITY_DEBUG("[INFINITY][QUEUES][FACTORY] Accepting connections on IP address %s and port %d.\n", ipAddress.c_str(), port);
 }
 
 QueuePair * QueuePairFactory::acceptIncomingConnection(void *userData, uint32_t userDataSizeInBytes) {
