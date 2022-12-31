@@ -75,12 +75,14 @@ public:
 	/**
 	 * Get ip address of this device
 	 */
-	std::string &getIpAddress() { return ipAddress; }
+	static std::string &getIpAddress() { return ipAddress; }
 
 	/**
 	 * Get the socket for accepting incoming connection
 	 */
 	int getServerSocket() { return serverSocket; }
+	
+	static bool calculateIpAddress();
 
 protected:
 
@@ -88,8 +90,7 @@ protected:
 
 	int32_t serverSocket;
 
-	std::string ipAddress;
-
+	inline static std::string ipAddress;
 };
 
 } /* namespace queues */

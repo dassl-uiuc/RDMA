@@ -23,9 +23,6 @@ QueuePairFactory::QueuePairFactory(infinity::core::Context *context) {
 
 	this->context = context;
 	this->serverSocket = -1;
-	char *ipAddressOfDevice = infinity::utils::Address::getIpAddressOfInterface(infinity::core::Configuration::DEFAULT_IB_DEVICE);
-	ipAddress = ipAddressOfDevice;
-	free(ipAddressOfDevice);
 }
 
 QueuePairFactory::~QueuePairFactory() {
@@ -180,6 +177,15 @@ QueuePair* QueuePairFactory::createLoopback(void *userData, uint32_t userDataSiz
 	return queuePair;
 
 }
+
+bool QueuePairFactory::calculateIpAddress() {
+	char *ipAddressOfDevice = infinity::utils::Address::getIpAddressOfInterface(infinity::core::Configuration::DEFAULT_IB_DEVICE);
+	ipAddress = ipAddressOfDevice;
+	free(ipAddressOfDevice);
+	return true;
+}
+
+const bool getIp = QueuePairFactory::calculateIpAddress();
 
 } /* namespace queues */
 } /* namespace infinity */
