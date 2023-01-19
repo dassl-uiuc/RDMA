@@ -60,12 +60,12 @@ public:
 	 * @param socket the connection socket used for reply
 	 * @return the created qp
 	 */
-	QueuePair * replyIncomingConnection(int socket, serializedQueuePair* recvBuf, void *userData = NULL, uint32_t userDataSizeInBytes = 0);
+	QueuePair * replyIncomingConnection(int socket, serializedQueuePair* recvBuf, void *userData = NULL, uint32_t userDataSizeInBytes = 0, bool closeAfterReply = true);
 
 	/**
 	 * Connect to remote machine (active side)
 	 */
-	QueuePair * connectToRemoteHost(const char* hostAddress, uint16_t port, void *userData = NULL, uint32_t userDataSizeInBytes = 0);
+	QueuePair * connectToRemoteHost(const char* hostAddress, uint16_t port, void *userData = NULL, uint32_t userDataSizeInBytes = 0, int32_t *clientSocket = NULL);
 
 	/**
 	 * Create loopback queue pair
@@ -78,7 +78,7 @@ public:
 	static std::string &getIpAddress() { return ipAddress; }
 
 	/**
-	 * Get the socket for accepting incoming connection
+	 * Get the socket for accepting incoming connection (Server only!)
 	 */
 	int getServerSocket() { return serverSocket; }
 	

@@ -75,7 +75,7 @@ int QueuePairFactory::waitIncomingConnection(serializedQueuePair **recvBuf) {
 	return connectionSocket;
 }
 
-QueuePair * QueuePairFactory::replyIncomingConnection(int socket, serializedQueuePair* receiveBuffer, void *userData, uint32_t userDataSizeInBytes) {
+QueuePair * QueuePairFactory::replyIncomingConnection(int socket, serializedQueuePair* receiveBuffer, void *userData, uint32_t userDataSizeInBytes, bool closeAfterReply) {
 	INFINITY_ASSERT(userDataSizeInBytes < infinity::core::Configuration::MAX_CONNECTION_USER_DATA_SIZE,
 			"[INFINITY][QUEUES][FACTORY] User data size is too large.\n")
 	
@@ -105,14 +105,14 @@ QueuePair * QueuePairFactory::replyIncomingConnection(int socket, serializedQueu
 	printf("S6\n");
 	this->context->registerQueuePair(queuePair);
 
-	close(socket);
+	if (closeAfterReply) close(socket);
 	free(receiveBuffer);
 	free(sendBuffer);
 
 	return queuePair;
 }
 
-QueuePair * QueuePairFactory::connectToRemoteHost(const char* hostAddress, uint16_t port, void *userData, uint32_t userDataSizeInBytes) {
+QueuePair * QueuePairFactory::connectToRemoteHost(const char* hostAddress, uint16_t port, void *userData, uint32_t userDataSizeInBytes, int32_t *clientSocket) {
 
 	INFINITY_ASSERT(userDataSizeInBytes < infinity::core::Configuration::MAX_CONNECTION_USER_DATA_SIZE,
 			"[INFINITY][QUEUES][FACTORY] User data size is too large.\n")
@@ -158,7 +158,11 @@ QueuePair * QueuePairFactory::connectToRemoteHost(const char* hostAddress, uint1
 
 	this->context->registerQueuePair(queuePair);
 
-	close(connectionSocket);
+	if (clientSocket != NULL) {
+		*clientSocket = connectionSocket;
+	} else {
+		close(connectionSocket);
+	}
 	free(receiveBuffer);
 	free(sendBuffer);
 
