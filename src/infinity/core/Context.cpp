@@ -84,7 +84,7 @@ Context::~Context() {
 
 	// Destroy shared receive queue
 	int returnValue = ibv_destroy_srq(this->ibvSharedReceiveQueue);
-	INFINITY_ASSERT(returnValue == 0, "[INFINITY][CORE][CONTEXT] Could not delete shared receive queue\n");
+	INFINITY_ASSERT(returnValue == 0, "[INFINITY][CORE][CONTEXT] Could not delete shared receive queue, %d\n", returnValue);
 
 	// Destroy completion queues
 	returnValue = ibv_destroy_cq(this->ibvSendCompletionQueue);

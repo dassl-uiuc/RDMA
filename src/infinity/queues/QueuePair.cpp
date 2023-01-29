@@ -37,7 +37,7 @@ int OperationFlags::ibvFlags() {
 }
 
 QueuePair::QueuePair(infinity::core::Context* context) :
-		context(context) {
+		context(context), remoteSocket(-1) {
 	printf("S11\n");
 	ibv_qp_init_attr qpInitAttributes;
 	memset(&qpInitAttributes, 0, sizeof(qpInitAttributes));
@@ -87,6 +87,10 @@ QueuePair::~QueuePair() {
 		this->userDataSize = 0;
 	}
 
+	if (remoteSocket > 0) {
+		close(remoteSocket);
+		remoteSocket = -1;
+	}
 }
 
 union ibv_gid QueuePair::getLocalGid() {

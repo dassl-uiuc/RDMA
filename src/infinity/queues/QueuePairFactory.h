@@ -60,12 +60,12 @@ public:
 	 * @param socket the connection socket used for reply
 	 * @return the created qp
 	 */
-	QueuePair * replyIncomingConnection(int socket, serializedQueuePair* recvBuf, void *userData = NULL, uint32_t userDataSizeInBytes = 0, bool closeAfterReply = true);
+	QueuePair * replyIncomingConnection(int socket, serializedQueuePair* recvBuf, void *userData = NULL, uint32_t userDataSizeInBytes = 0);
 
 	/**
 	 * Connect to remote machine (active side)
 	 */
-	QueuePair * connectToRemoteHost(const char* hostAddress, uint16_t port, void *userData = NULL, uint32_t userDataSizeInBytes = 0, int32_t *clientSocket = NULL);
+	QueuePair * connectToRemoteHost(const char* hostAddress, uint16_t port, void *userData = NULL, uint32_t userDataSizeInBytes = 0);
 
 	/**
 	 * Create loopback queue pair

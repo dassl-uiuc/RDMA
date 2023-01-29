@@ -9,6 +9,8 @@
 #ifndef QUEUES_QUEUEPAIR_H_
 #define QUEUES_QUEUEPAIR_H_
 
+#include <string>
+
 #include <infiniband/verbs.h>
 
 #include <infinity/core/Context.h>
@@ -25,6 +27,8 @@ class QueuePairFactory;
 
 namespace infinity {
 namespace queues {
+
+using std::string;
 
 class OperationFlags {
 
@@ -86,6 +90,10 @@ public:
 	uint32_t getQueuePairNumber();
 	uint32_t getSequenceNumber();
 	union ibv_gid getLocalGid();
+	int getRemoteSocket() { return remoteSocket; }
+	void setRemoteSocket(int socket) { remoteSocket = socket; }
+	string &getRemoteAddr() { return remoteAddr; }
+	void setRemoteAddr(const char *hostAddr) { remoteAddr = hostAddr; }
 
 public:
 
@@ -163,6 +171,10 @@ protected:
 
 	void *userData;
 	uint32_t userDataSize;
+
+	int remoteSocket;
+
+	string remoteAddr;
 
 };
 
