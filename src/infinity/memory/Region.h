@@ -41,6 +41,7 @@ public:
 	uint64_t getAddressWithOffset(uint64_t offset);
 	uint32_t getLocalKey();
 	uint32_t getRemoteKey();
+	void zero();
 
 protected:
 

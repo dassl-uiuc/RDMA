@@ -66,5 +66,9 @@ uint32_t Region::getRemoteKey() {
 	return this->ibvMemoryRegion->rkey;
 }
 
+void Region::zero() {
+	memset(this->data, 0, this->sizeInBytes);
+}
+
 } /* namespace memory */
 } /* namespace infinity */
