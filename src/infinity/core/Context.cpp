@@ -48,6 +48,38 @@ Context::Context(uint16_t device, uint16_t devicePort) {
     	//dev_guid = ibv_get_device_guid(ibv_devs[i]);
     	printf("%s :\n", dev_name);
 	INFINITY_ASSERT(this->ibvContext != NULL, "[INFINITY][CORE][CONTEXT] Could not open device %d.\n", device);
+	initContext(devicePort);
+}
+
+Context::Context(const std::string deviceName, uint16_t devicePort) {
+	// Get IB device list
+	int32_t numberOfInstalledDevices = 0;
+	ibv_device **ibvDeviceList = ibv_get_device_list(&numberOfInstalledDevices);
+	INFINITY_ASSERT(numberOfInstalledDevices > 0, "[INFINITY][CORE][CONTEXT] No InfiniBand devices found.\n");
+
+	int dev_i = 0;
+	for (int dev_i = 0; dev_i < numberOfInstalledDevices; dev_i++) {
+		ibv_device *dev = ibvDeviceList[dev_i];
+		const char *name = ibv_get_device_name(dev);
+		if (deviceName.compare(name) == 0) {
+			this->ibvDevice = dev;
+			break;
+		}
+	}
+	INFINITY_ASSERT(dev_i < numberOfInstalledDevices, "[INFINITY][CORE][CONTEXT] Requested device %s not found.\n", deviceName.c_str());
+	INFINITY_ASSERT(this->ibvDevice != NULL, "[INFINITY][CORE][CONTEXT] Requested device %s was NULL.\n", deviceName.c_str());
+
+	// Open IB device and allocate protection domain
+	this->ibvContext = ibv_open_device(this->ibvDevice);
+	const char* dev_name = ibv_get_device_name(this->ibvDevice);
+    	//dev_guid = ibv_get_device_guid(ibv_devs[i]);
+    	printf("dev %s :\n", dev_name);
+	INFINITY_ASSERT(this->ibvContext != NULL, "[INFINITY][CORE][CONTEXT] Could not open device %s.\n", deviceName.c_str());
+	initContext(devicePort);
+}
+
+void Context::initContext(uint16_t devicePort) {
+
 	this->ibvProtectionDomain = ibv_alloc_pd(this->ibvContext);
 	INFINITY_ASSERT(this->ibvProtectionDomain != NULL, "[INFINITY][CORE][CONTEXT] Could not allocate protection domain.\n");
 

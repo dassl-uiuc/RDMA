@@ -11,8 +11,10 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <unordered_map>
 #include <infiniband/verbs.h>
+
+#include <string>
+#include <unordered_map>
 
 namespace infinity {
 namespace memory {
@@ -64,6 +66,8 @@ public:
 	 */
 	Context(uint16_t device = 2, uint16_t devicePort = 1);
 
+	Context(const std::string deviceName, uint16_t devicePort = 1);
+
 	/**
 	 * Destructor
 	 */
@@ -88,6 +92,7 @@ public:
 	infinity::memory::Atomic * defaultAtomic;
 
 protected:
+	void initContext(uint16_t devicePort);
 
 	/**
 	 * Returns ibVerbs context

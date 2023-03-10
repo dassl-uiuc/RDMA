@@ -44,8 +44,9 @@ public:
 
 	static const uint32_t MAX_CONNECTION_USER_DATA_SIZE = 1024;			// Size of the user data which can be transmitted when establishing a connection
 
-	static constexpr const char* DEFAULT_IB_DEVICE = "enp65s0f0";				// Default name of IB device
+	static constexpr const char* DEFAULT_NET_DEVICE = "enp0s31f6";		// Default name of net device
 
+	static constexpr const char* DEFAULT_IB_DEVICE = "rxe_0";			// Default name of IB device
 };
 
 } /* namespace core */

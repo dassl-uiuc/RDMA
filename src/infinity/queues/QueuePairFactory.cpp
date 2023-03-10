@@ -180,7 +180,7 @@ QueuePair* QueuePairFactory::createLoopback(void *userData, uint32_t userDataSiz
 }
 
 bool QueuePairFactory::calculateIpAddress() {
-	char *ipAddressOfDevice = infinity::utils::Address::getIpAddressOfInterface(infinity::core::Configuration::DEFAULT_IB_DEVICE);
+	char *ipAddressOfDevice = infinity::utils::Address::getIpAddressOfInterface(infinity::core::Configuration::DEFAULT_NET_DEVICE);
 	ipAddress = ipAddressOfDevice;
 	free(ipAddressOfDevice);
 	return true;
