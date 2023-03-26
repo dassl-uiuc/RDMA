@@ -30,9 +30,11 @@ public:
 	infinity::memory::Region * getRegion();
 
 	void setCompleted(bool success);
+	void setAllPrevCompleted();
 	bool wasSuccessful();
 
 	bool checkIfCompleted();
+	bool checkAllPrevCompleted();
 	void waitUntilCompleted();
 
 	void setImmediateValue(uint32_t immediateValue);
@@ -50,6 +52,7 @@ protected:
 	infinity::memory::Region * region;
 
 	std::atomic<bool> completed;
+	std::atomic<bool> all_prev_completed;
 	std::atomic<bool> success;
 
 	void *userData;

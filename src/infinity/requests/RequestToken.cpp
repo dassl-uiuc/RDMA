@@ -15,6 +15,7 @@ RequestToken::RequestToken(infinity::core::Context *context) :
 		context(context) {
 	this->success.store(false);
 	this->completed.store(false);
+	this->all_prev_completed.store(false);
 	this->region = NULL;
 	this->userData = NULL;
 	this->userDataValid = false;
@@ -28,6 +29,10 @@ void RequestToken::setCompleted(bool success) {
 	this->completed.store(true);
 }
 
+void RequestToken::setAllPrevCompleted() {
+	this->all_prev_completed.store(true);
+}
+
 bool RequestToken::checkIfCompleted() {
 	if (this->completed.load()) {
 		return true;
@@ -35,6 +40,10 @@ bool RequestToken::checkIfCompleted() {
 		this->context->pollSendCompletionQueue();
 		return this->completed.load();
 	}
+}
+
+bool RequestToken::checkAllPrevCompleted() {
+	return this->all_prev_completed.load();
 }
 
 void RequestToken::waitUntilCompleted() {
