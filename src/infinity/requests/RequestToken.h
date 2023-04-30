@@ -46,12 +46,13 @@ public:
 	void* getUserData();
 	uint32_t getUserDataSize();
 
+	std::atomic<bool> completed;  // todo: tmp approach
+
 protected:
 
 	infinity::core::Context * const context;
 	infinity::memory::Region * region;
 
-	std::atomic<bool> completed;
 	std::atomic<bool> all_prev_completed;
 	std::atomic<bool> success;
 

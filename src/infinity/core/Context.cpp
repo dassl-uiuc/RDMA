@@ -228,6 +228,29 @@ bool Context::pollSendCompletionQueue() {
 
 }
 
+bool Context::pollTwoSendCompletion() {
+	ibv_wc wcs[2];
+	int result = ibv_poll_cq(this->ibvSendCompletionQueue, 2, wcs);
+	int i;
+
+	if (result > 0) {
+		for (i = 0; i < result; i++) {
+			infinity::requests::RequestToken *request = reinterpret_cast<infinity::requests::RequestToken*>(wcs[i].wr_id);
+			if (request != NULL) {
+				request->setCompleted(wcs[i].status == IBV_WC_SUCCESS);
+			}
+
+			if (wcs[i].status == IBV_WC_SUCCESS) {
+				INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] Request completed (id %lu).\n", wcs[i].wr_id);
+			} else {
+				INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] Request failed with error code %d (id %lu).\n", wcs[i].status, wcs[ib_uverbs_async_event_desc].wr_id);
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 void Context::registerQueuePair(infinity::queues::QueuePair* queuePair) {
 	this->queuePairMap.insert({queuePair->getQueuePairNumber(), queuePair});
 }

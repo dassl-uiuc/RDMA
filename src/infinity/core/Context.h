@@ -86,6 +86,8 @@ public:
 	 */
 	void postReceiveBuffer(infinity::memory::Buffer *buffer, bool is_int = false);
 
+	bool pollTwoSendCompletion();
+
 public:
 
 	infinity::requests::RequestToken * defaultRequestToken;
