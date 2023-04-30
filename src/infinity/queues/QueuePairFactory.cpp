@@ -63,7 +63,6 @@ QueuePair * QueuePairFactory::acceptIncomingConnection(void *userData, uint32_t 
 }
 
 int QueuePairFactory::waitIncomingConnection(serializedQueuePair **recvBuf) {
-	printf("S1\n");
 	int connectionSocket = accept(this->serverSocket, (sockaddr *) NULL, NULL);
 	INFINITY_ASSERT(connectionSocket >= 0, "[INFINITY][QUEUES][FACTORY] Cannot open connection socket.\n");
 
@@ -82,17 +81,16 @@ QueuePair * QueuePairFactory::replyIncomingConnection(int socket, serializedQueu
 	int32_t returnValue;
 	serializedQueuePair *sendBuffer = (serializedQueuePair*) calloc(1, sizeof(serializedQueuePair));
 	
-	printf("S2\n");
 	QueuePair *queuePair = new QueuePair(this->context);
 	queuePair->setRemoteSocket(socket);
-	printf("S3\n");
+
 	sendBuffer->localDeviceId = queuePair->getLocalDeviceId();
 	sendBuffer->queuePairNumber = queuePair->getQueuePairNumber();
 	sendBuffer->sequenceNumber = queuePair->getSequenceNumber();
 	sendBuffer->userDataSize = userDataSizeInBytes;
 	sendBuffer->gid = queuePair->getLocalGid();
 	memcpy(sendBuffer->userData, userData, userDataSizeInBytes);
-	printf("S4\n");
+
 	returnValue = send(socket, sendBuffer, sizeof(serializedQueuePair), 0);
 	INFINITY_ASSERT(returnValue == sizeof(serializedQueuePair),
 			"[INFINITY][QUEUES][FACTORY] Incorrect number of bytes transmitted. Expected %lu. Received %d.\n", sizeof(serializedQueuePair), returnValue);
@@ -100,10 +98,10 @@ QueuePair * QueuePairFactory::replyIncomingConnection(int socket, serializedQueu
 	INFINITY_DEBUG("[INFINITY][QUEUES][FACTORY] Pairing (%u, %u, %u, %u)-(%u, %u, %u, %u)\n", queuePair->getLocalDeviceId(), queuePair->getQueuePairNumber(),
 			queuePair->getSequenceNumber(), userDataSizeInBytes, receiveBuffer->localDeviceId, receiveBuffer->queuePairNumber, receiveBuffer->sequenceNumber,
 			receiveBuffer->userDataSize);
-	printf("S5\n");
+
 	queuePair->activate(receiveBuffer->localDeviceId, receiveBuffer->queuePairNumber, receiveBuffer->sequenceNumber, receiveBuffer->gid);
 	queuePair->setRemoteUserData(receiveBuffer->userData, receiveBuffer->userDataSize);
-	printf("S6\n");
+
 	this->context->registerQueuePair(queuePair);
 
 	free(receiveBuffer);
@@ -130,7 +128,7 @@ QueuePair * QueuePairFactory::connectToRemoteHost(const char* hostAddress, uint1
 	INFINITY_ASSERT(connectionSocket >= 0, "[INFINITY][QUEUES][FACTORY] Cannot open connection socket.\n");
 
 	int returnValue = connect(connectionSocket, (sockaddr *) &(remoteAddress), sizeof(sockaddr_in));
-	INFINITY_ASSERT(returnValue == 0, "[INFINITY][QUEUES][FACTORY] Could not connect to server.\n");
+	INFINITY_ASSERT(returnValue == 0, "[INFINITY][QUEUES][FACTORY] Could not connect to server. ret %d\n", returnValue);
 
 	QueuePair *queuePair = new QueuePair(this->context);
 	queuePair->setRemoteSocket(connectionSocket);
