@@ -371,6 +371,44 @@ void QueuePair::batchwrite(infinity::memory::Buffer** buffers, int num_requests,
 
 }
 
+void QueuePair::writeTwoPlace(infinity::memory::Buffer* buffer, uint64_t* localOffset,
+                              infinity::memory::RegionToken* destination, uint64_t* remoteOffset, uint32_t* sizeInBytes,
+                              infinity::requests::RequestToken** requestToken) {
+    struct ibv_send_wr* badWorkReuqest;
+    struct ibv_send_wr wRs[2];
+	struct ibv_sge sgElems[2];
+	int i;
+	OperationFlags flags;
+
+	memset(sgElems, 0, sizeof(sgElems));
+	for (i = 0; i < 2; i++) {
+		sgElems[i].addr = buffer->getAddress() + localOffset[i];
+		sgElems[i].length = sizeInBytes[i];
+		sgElems[i].lkey = buffer->getLocalKey();
+	}
+	
+	memset(wRs, 0, sizeof(wRs));
+	for (i = 0; i < 2; i++) {
+		wRs[i].wr_id = reinterpret_cast<uint64_t>(requestToken[i]);
+		wRs[i].sg_list = &sgElems[i];
+		wRs[i].num_sge = 1;
+		wRs[i].opcode = IBV_WR_RDMA_WRITE;
+		wRs[i].send_flags = flags.ibvFlags();
+		if (requestToken[i] != NULL) {
+			wRs[i].send_flags |= IBV_SEND_SIGNALED;
+		}
+		wRs[i].wr.rdma.remote_addr = destination->getAddress() + remoteOffset[i];
+		wRs[i].wr.rdma.rkey = destination->getRemoteKey();
+	}
+	wRs[0].next = &wRs[1];
+
+	int returnValue = ibv_post_send(this->ibvQueuePair, wRs, &badWorkReuqest);
+
+	INFINITY_ASSERT(returnValue == 0, "[INFINITY][QUEUES][QUEUEPAIR] Posting 2 WRs failed. %s.\n", strerror(errno));
+
+	INFINITY_DEBUG("[INFINITY][QUEUES][QUEUEPAIR] 2 WRs created (id %lu, %lu).\n", wRs[0].wr_id, wRs[1].wr_id);
+}
+
 void QueuePair::writeWithImmediate(infinity::memory::Buffer* buffer, uint64_t localOffset, infinity::memory::RegionToken* destination, uint64_t remoteOffset,
 		uint32_t sizeInBytes, uint32_t immediateValue, OperationFlags send_flags, infinity::requests::RequestToken* requestToken) {
 

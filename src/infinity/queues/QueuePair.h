@@ -120,6 +120,8 @@ public:
 
 	void batchwrite(infinity::memory::Buffer** buffers, int num_requests, uint64_t localOffset, infinity::memory::RegionToken* destination, uint64_t remoteOffset, uint32_t sizeInBytes, OperationFlags send_flags, infinity::requests::RequestToken *requestToken);
 
+	void writeTwoPlace(infinity::memory::Buffer* buffer, uint64_t* localOffset, infinity::memory::RegionToken *destination, uint64_t *remoteOffset, uint32_t *sizeInBytes, infinity::requests::RequestToken **requestToken);
+
 	void read(infinity::memory::Buffer *buffer, infinity::memory::RegionToken *source, infinity::requests::RequestToken *requestToken = NULL);
 	void read(infinity::memory::Buffer *buffer, infinity::memory::RegionToken *source, uint32_t sizeInBytes, infinity::requests::RequestToken *requestToken =
 	NULL);
