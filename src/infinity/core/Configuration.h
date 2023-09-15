@@ -47,6 +47,8 @@ public:
 	static constexpr const char* DEFAULT_NET_DEVICE = "enp0s31f6";		// Default name of net device
 
 	static constexpr const char* DEFAULT_IB_DEVICE = "rxe_0";			// Default name of IB device
+
+	static constexpr const uint16_t DEFAULT_IB_PHY_PORT = 1;			// Default physical port number of IB device
 };
 
 } /* namespace core */
