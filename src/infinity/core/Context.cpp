@@ -243,7 +243,7 @@ bool Context::pollTwoSendCompletion() {
 			if (wcs[i].status == IBV_WC_SUCCESS) {
 				INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] Request completed (id %lu).\n", wcs[i].wr_id);
 			} else {
-				INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] Request failed with error code %d (id %lu).\n", wcs[i].status, wcs[ib_uverbs_async_event_desc].wr_id);
+				INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] Request failed with error code %d (id %lu).\n", wcs[i].status, wcs[i].wr_id);
 			}
 		}
 		return true;
