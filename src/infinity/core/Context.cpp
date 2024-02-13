@@ -45,8 +45,8 @@ Context::Context(uint16_t device, uint16_t devicePort) {
 	// Open IB device and allocate protection domain
 	this->ibvContext = ibv_open_device(this->ibvDevice);
 	const char* dev_name = ibv_get_device_name(this->ibvDevice);
-    	//dev_guid = ibv_get_device_guid(ibv_devs[i]);
-    	printf("%s :\n", dev_name);
+	//dev_guid = ibv_get_device_guid(ibv_devs[i]);
+	INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] device: %s\n", dev_name);
 	INFINITY_ASSERT(this->ibvContext != NULL, "[INFINITY][CORE][CONTEXT] Could not open device %d.\n", device);
 	initContext(devicePort);
 }
@@ -72,8 +72,8 @@ Context::Context(const std::string deviceName, uint16_t devicePort) {
 	// Open IB device and allocate protection domain
 	this->ibvContext = ibv_open_device(this->ibvDevice);
 	const char* dev_name = ibv_get_device_name(this->ibvDevice);
-    	//dev_guid = ibv_get_device_guid(ibv_devs[i]);
-    	printf("dev %s :\n", dev_name);
+	//dev_guid = ibv_get_device_guid(ibv_devs[i]);
+	INFINITY_DEBUG("[INFINITY][CORE][CONTEXT] device: %s\n", dev_name);
 	INFINITY_ASSERT(this->ibvContext != NULL, "[INFINITY][CORE][CONTEXT] Could not open device %s.\n", deviceName.c_str());
 	initContext(devicePort);
 }

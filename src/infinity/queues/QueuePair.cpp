@@ -60,7 +60,6 @@ QueuePair::QueuePair(infinity::core::Context* context) :
 	qpAttributes.qp_state = IBV_QPS_INIT;
 	qpAttributes.pkey_index = 0;
 	qpAttributes.port_num = context->getDevicePort();
-	printf("devie port is %d\n", context->getDevicePort());
 
 	qpAttributes.qp_access_flags = IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_ATOMIC;
 
