@@ -129,6 +129,8 @@ public:
       infinity::requests::RequestToken *requestToken = NULL);
 	void read(infinity::memory::Buffer *buffer, uint64_t localOffset, infinity::memory::RegionToken *source, uint64_t remoteOffset, uint32_t sizeInBytes,
 			OperationFlags flags, infinity::requests::RequestToken *requestToken = NULL);
+	void readTwoPlaces(infinity::memory::Buffer *buffer, uint64_t* localOffsets, infinity::memory::RegionToken *source,
+						uint64_t *remoteOffsets, uint32_t *sizeInBytes, infinity::requests::RequestToken **requestTokens);
 
 public:
 

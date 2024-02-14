@@ -372,7 +372,7 @@ void QueuePair::batchwrite(infinity::memory::Buffer** buffers, int num_requests,
 void QueuePair::writeTwoPlace(infinity::memory::Buffer* buffer, uint64_t* localOffset,
                               infinity::memory::RegionToken* destination, uint64_t* remoteOffset, uint32_t* sizeInBytes,
                               infinity::requests::RequestToken** requestToken) {
-    struct ibv_send_wr* badWorkReuqest;
+    struct ibv_send_wr* badWorkRequest;
     struct ibv_send_wr wRs[2];
 	struct ibv_sge sgElems[2];
 	int i;
@@ -400,7 +400,7 @@ void QueuePair::writeTwoPlace(infinity::memory::Buffer* buffer, uint64_t* localO
 	}
 	wRs[0].next = &wRs[1];
 
-	int returnValue = ibv_post_send(this->ibvQueuePair, wRs, &badWorkReuqest);
+	int returnValue = ibv_post_send(this->ibvQueuePair, wRs, &badWorkRequest);
 
 	INFINITY_ASSERT(returnValue == 0, "[INFINITY][QUEUES][QUEUEPAIR] Posting 2 WRs failed. %s.\n", strerror(errno));
 
@@ -621,6 +621,43 @@ void QueuePair::read(infinity::memory::Buffer* buffer, uint64_t localOffset, inf
 
 	INFINITY_DEBUG("[INFINITY][QUEUES][QUEUEPAIR] Read request created (id %lu).\n", workRequest.wr_id);
 
+}
+
+void QueuePair::readTwoPlaces(infinity::memory::Buffer *buffer, uint64_t* localOffsets, infinity::memory::RegionToken *source,
+						uint64_t *remoteOffsets, uint32_t *sizeInBytes, infinity::requests::RequestToken **requestTokens) {
+	ibv_sge sgEs[2];
+	ibv_send_wr wRs[2];
+	ibv_send_wr *badWorkRequest;
+
+	uint32_t totalSizeInBytes = 0;
+	memset(sgEs, 0, sizeof(sgEs));
+	for (int i = 0; i < 2; i++) {
+		sgEs[i].addr = buffer->getAddress() + localOffsets[i];
+		sgEs[i].length = sizeInBytes[i];
+		sgEs[i].lkey = buffer->getLocalKey();
+		totalSizeInBytes += sgEs[i].length;
+	}
+
+	memset(wRs, 0, sizeof(wRs));
+	for (int i = 0; i < 2; ++i) {
+		wRs[i].wr_id = reinterpret_cast<uint64_t>(requestTokens[i]);
+		wRs[i].sg_list = &sgEs[i];
+		wRs[i].num_sge = 1;
+		wRs[i].opcode = IBV_WR_RDMA_READ;
+		wRs[i].send_flags = OperationFlags().ibvFlags();
+		if (requestTokens[i] != nullptr) {
+			wRs[i].send_flags |= IBV_SEND_SIGNALED;
+		}
+		wRs[i].wr.rdma.remote_addr = source->getAddress() + remoteOffsets[i];
+		wRs[i].wr.rdma.rkey = source->getRemoteKey();
+	}
+	wRs[0].next = &wRs[1];
+
+	int returnValue = ibv_post_send(this->ibvQueuePair, wRs, &badWorkRequest);
+
+	INFINITY_ASSERT(returnValue == 0, "[INFINITY][QUEUES][QUEUEPAIR] Posting 2 WRs failed. %s.\n", strerror(errno));
+
+	INFINITY_DEBUG("[INFINITY][QUEUES][QUEUEPAIR] 2 WRs created (id %lu, %lu).\n", wRs[0].wr_id, wRs[1].wr_id);
 }
 
 void QueuePair::compareAndSwap(infinity::memory::RegionToken* destination, infinity::memory::Atomic* previousValue, uint64_t compare, uint64_t swap,
