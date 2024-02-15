@@ -184,7 +184,7 @@ bool QueuePairFactory::calculateIpAddress() {
 	return true;
 }
 
-// const bool getIp = QueuePairFactory::calculateIpAddress();
+const bool getIp = QueuePairFactory::calculateIpAddress();
 
 } /* namespace queues */
 } /* namespace infinity */
