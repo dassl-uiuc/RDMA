@@ -4,6 +4,7 @@
  * (c) 2018 Claude Barthels, ETH Zurich
  * Contact: claudeb@inf.ethz.ch
  *
+ * This header is generated at ${GENTIME}
  */
 
 #ifndef CORE_CONFIGURATION_H_
@@ -44,11 +45,11 @@ public:
 
 	static const uint32_t MAX_CONNECTION_USER_DATA_SIZE = 1024;			// Size of the user data which can be transmitted when establishing a connection
 
-	static constexpr const char* DEFAULT_NET_DEVICE = "enp0s31f6";		// Default name of net device
+	static constexpr const char* DEFAULT_NET_DEVICE = "${NETDEV}";		// Default name of net device
 
-	static constexpr const char* DEFAULT_IB_DEVICE = "rxe_0";			// Default name of IB device
+	static constexpr const char* DEFAULT_IB_DEVICE = "${IBDEV}";			// Default name of IB device
 
-	static constexpr const uint16_t DEFAULT_IB_PHY_PORT = 1;			// Default physical port number of IB device
+	static constexpr const uint16_t DEFAULT_IB_PHY_PORT = ${IBPORT};			// Default physical port number of IB device
 };
 
 } /* namespace core */

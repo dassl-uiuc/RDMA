@@ -27,7 +27,13 @@ add_custom_command(
     COMMAND mkdir -p ${RDMA_SOURCE_DIR}/release/include/infinity
     COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && cp --parents ${HDR_FILES} ${RDMA_SOURCE_DIR}/release/include/infinity
     COMMAND echo "generated at `date`" | tee ${RDMA_SOURCE_DIR}/release/include/timestamp
-    DEPENDS ${HDR_FILES})
+    DEPENDS ${HDR_FILES} ${RDMA_SOURCE_DIR}/src/infinity/core/Configuration.h)
+
+add_custom_command(
+    OUTPUT ${RDMA_SOURCE_DIR}/src/infinity/core/Configuration.h
+    COMMAND python ${RDMA_SOURCE_DIR}/gen_configuration_h.py ${RDMA_SOURCE_DIR}/src/infinity/core
+    DEPENDS ${RDMA_SOURCE_DIR}/src/infinity/core/Configuration.h.template ${RDMA_SOURCE_DIR}/gen_configuration_h.py
+)
 
 add_custom_target(release_hdr
     DEPENDS ${RDMA_SOURCE_DIR}/release/include/timestamp)

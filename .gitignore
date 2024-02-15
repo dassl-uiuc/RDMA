@@ -1,2 +1,4 @@
 build/
 release/
+Configuration.h
+__pycache__
