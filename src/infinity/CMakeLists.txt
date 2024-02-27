@@ -25,7 +25,7 @@ target_link_libraries(infinity
 add_custom_command(
     OUTPUT ${RDMA_SOURCE_DIR}/release/include/timestamp
     COMMAND mkdir -p ${RDMA_SOURCE_DIR}/release/include/infinity
-    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && cp --parents ${HDR_FILES} ${RDMA_SOURCE_DIR}/release/include/infinity
+    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && cp --parents ${HDR_FILES} core/Configuration.h ${RDMA_SOURCE_DIR}/release/include/infinity
     COMMAND echo "generated at `date`" | tee ${RDMA_SOURCE_DIR}/release/include/timestamp
     DEPENDS ${HDR_FILES} ${RDMA_SOURCE_DIR}/src/infinity/core/Configuration.h)
 
