@@ -282,7 +282,7 @@ void QueuePair::write(infinity::memory::Buffer* buffer, uint64_t localOffset, in
 	sgElement.lkey = buffer->getLocalKey();
 
 	INFINITY_ASSERT(sizeInBytes <= buffer->getRemainingSizeInBytes(localOffset),
-			"[INFINITY][QUEUES][QUEUEPAIR] Segmentation fault while creating scatter-getter element.\n");
+			"[INFINITY][QUEUES][QUEUEPAIR][write] write size %u, remaining bytes %lu\n", sizeInBytes, buffer->getRemainingSizeInBytes(localOffset));
 
 	memset(&workRequest, 0, sizeof(ibv_send_wr));
 	workRequest.wr_id = reinterpret_cast<uint64_t>(requestToken);
@@ -598,7 +598,7 @@ void QueuePair::read(infinity::memory::Buffer* buffer, uint64_t localOffset, inf
 	sgElement.lkey = buffer->getLocalKey();
 
 	INFINITY_ASSERT(sizeInBytes <= buffer->getRemainingSizeInBytes(localOffset),
-			"[INFINITY][QUEUES][QUEUEPAIR] Segmentation fault while creating scatter-getter element.\n");
+			"[INFINITY][QUEUES][QUEUEPAIR][read] read size %u, remaining bytes %lu\n", sizeInBytes, buffer->getRemainingSizeInBytes(localOffset));
 
 	memset(&workRequest, 0, sizeof(ibv_send_wr));
 	workRequest.wr_id = reinterpret_cast<uint64_t>(requestToken);
