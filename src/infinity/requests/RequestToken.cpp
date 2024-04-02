@@ -52,6 +52,12 @@ void RequestToken::waitUntilCompleted() {
 	}
 }
 
+void RequestToken::waitUntilCompletedCond(bool* cond) {
+    while (*cond && !this->completed.load()) {
+        this->context->pollSendCompletionQueue();
+    }
+}
+
 bool RequestToken::wasSuccessful() {
 	return this->success.load();
 }

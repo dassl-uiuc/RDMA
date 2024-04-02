@@ -14,6 +14,7 @@ struct CombinedReqToken {
     CombinedReqToken(core::Context *ctx);
 
     void WaitUntilBothCompleted();
+    void WaitUntilBothCompletedCond(bool *cond);
     bool CheckBothCompleted();
 };
 

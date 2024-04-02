@@ -36,6 +36,7 @@ public:
 	bool checkIfCompleted();
 	bool checkAllPrevCompleted();
 	void waitUntilCompleted();
+	void waitUntilCompletedCond(bool *cond);
 
 	void setImmediateValue(uint32_t immediateValue);
 	bool hasImmediateValue();

@@ -11,6 +11,12 @@ void CombinedReqToken::WaitUntilBothCompleted() {
     }
 }
 
+void CombinedReqToken::WaitUntilBothCompletedCond(bool* cond) {
+    while (*cond && (!tk1.completed.load() || !tk2.completed.load())) {
+        context->pollTwoSendCompletion();
+    }
+}
+
 bool CombinedReqToken::CheckBothCompleted() {
     if (tk1.completed.load() && tk2.completed.load()) {
         return true;
